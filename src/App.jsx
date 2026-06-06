@@ -6,6 +6,13 @@ import Solve from './screens/Solve'
 import Result from './screens/Result'
 import Saved from './screens/Saved'
 
+const EXISTING_USER_SAVES = [
+  { qId: 1, tag: 'wrong' },
+  { qId: 3, tag: 'important' },
+  { qId: 5, tag: 'tricky' },
+  { qId: 2, tag: 'revision' },
+]
+
 export default function App() {
   const [screen, setScreen] = useState('home')
   const [mode, setMode] = useState('guide')
@@ -14,9 +21,17 @@ export default function App() {
   const [timerPerQ, setTimerPerQ] = useState(60)
   const [autoAdvance, setAutoAdvance] = useState(false)
   const [isReviewMode, setIsReviewMode] = useState(false)
+  const [isNewUser, setIsNewUser] = useState(true)
   const [savedQs, setSavedQs] = useState([])
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const [showReattemptConfirm, setShowReattemptConfirm] = useState(false)
+
+  const toggleUserMode = () => {
+    const switchingToExisting = isNewUser
+    setIsNewUser(prev => !prev)
+    setSavedQs(switchingToExisting ? EXISTING_USER_SAVES : [])
+    setBannerDismissed(false)
+  }
 
   const navigate = (s) => setScreen(s)
 
@@ -65,6 +80,7 @@ export default function App() {
     timerPerQ, setTimerPerQ,
     autoAdvance, setAutoAdvance,
     isReviewMode,
+    isNewUser, toggleUserMode,
     savedQs, saveQuestion, unsaveQuestion,
     bannerDismissed, setBannerDismissed,
     startAttempt, submitTest,

@@ -27,14 +27,18 @@ const NavBar = ({ navigate }) => {
 const DIFF_MAP = { easy: { bg: '#EAF3DE', c: '#27500A', b: '#C0DD97', l: 'Easy' }, moderate: { bg: '#FAEEDA', c: '#633806', b: '#FAC775', l: 'Moderate' }, difficult: { bg: '#FCEBEB', c: '#791F1F', b: '#F7C1C1', l: 'Difficult' } }
 const IDX_CHAPTERS = ['Anatomical Terms', 'Skeletal System', 'Muscular System', 'Nervous System', 'Cardiovascular System', 'Respiratory System', 'Integumentary System', 'Endocrine System']
 
-export default function Subject({ navigate }) {
+export default function Subject({ navigate, isNewUser }) {
   const [filter, setFilter] = useState('all')
   const [diffOpen, setDiffOpen] = useState({})
   const [showIdx, setShowIdx] = useState(false)
 
   const toggleDiff = (id) => setDiffOpen(p => ({ ...p, [id]: !p[id] }))
 
-  const visible = CHAPTERS.filter(c => {
+  const displayChapters = isNewUser
+    ? CHAPTERS.map(c => ({ ...c, state: 'unattempted', prog: undefined, res: undefined }))
+    : CHAPTERS
+
+  const visible = displayChapters.filter(c => {
     if (filter === 'all') return true
     if (filter === 'free') return c.id <= 2
     if (filter === 'completed') return c.state === 'completed'
@@ -171,7 +175,9 @@ export default function Subject({ navigate }) {
       </div>
 
       <div className="scroll" style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', paddingBottom: 80 }}>
-        {visible.length > 0 ? visible.map(renderCard) : <div style={{ textAlign: 'center', padding: '40px 0', color: T3, fontSize: 13 }}>No chapters match this filter</div>}
+        {visible.length > 0
+          ? visible.map(c => renderCard(c))
+          : <div style={{ textAlign: 'center', padding: '40px 0', color: T3, fontSize: 13 }}>No chapters match this filter</div>}
       </div>
 
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
@@ -188,7 +194,7 @@ export default function Subject({ navigate }) {
             </div>
             <div style={{ overflowY: 'auto', flex: 1 }}>
               {IDX_CHAPTERS.map((ch, i) => {
-                const f = CHAPTERS.find(c => c.name === ch)
+                const f = displayChapters.find(c => c.name === ch)
                 const badge = f ? (f.state === 'completed' ? <span style={{ background: '#EAF3DE', color: '#27500A', fontSize: 10, padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>Done</span> : f.state === 'paused' ? <span style={{ background: '#FAEEDA', color: '#633806', fontSize: 10, padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>Paused</span> : null) : null
                 return (
                   <div key={i} style={{ padding: '13px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${BD}`, cursor: 'pointer' }}>

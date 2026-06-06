@@ -24,10 +24,15 @@ const NavBar = ({ navigate }) => {
   )
 }
 
-export default function Home({ navigate, savedQs, bannerDismissed, setBannerDismissed, unsaveQuestion }) {
-  const todayQs = 0, overallAcc = 0
-  const isFirstTime = todayQs === 0
+export default function Home({ navigate, savedQs, bannerDismissed, setBannerDismissed, unsaveQuestion, isNewUser, toggleUserMode }) {
+  const todayQs = isNewUser ? 0 : 12
+  const overallAcc = isNewUser ? 0 : 71
+  const isFirstTime = isNewUser
   const [continueDismissed, setContinueDismissed] = useState(false)
+
+  const displaySubjects = isNewUser
+    ? SUBJECTS.map(s => ({ ...s, done: 0, accuracy: 0 }))
+    : SUBJECTS
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -37,6 +42,14 @@ export default function Home({ navigate, savedQs, bannerDismissed, setBannerDism
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', color: T2 }}>
           <svg width="16" height="11" viewBox="0 0 30 20" fill="currentColor"><rect x="0" y="8" width="4" height="12" rx="1" opacity="0.4"/><rect x="7" y="5" width="4" height="15" rx="1" opacity="0.6"/><rect x="14" y="2" width="4" height="18" rx="1" opacity="0.8"/><rect x="21" y="0" width="4" height="20" rx="1"/></svg>
           <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="2" stroke="currentColor"/><rect x="22" y="3.5" width="2.5" height="5" rx="1" fill="currentColor" opacity="0.4"/><rect x="1.5" y="1.5" width="15" height="9" rx="1.5" fill="currentColor"/></svg>
+        </div>
+      </div>
+
+      {/* Prototype toggle strip */}
+      <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', padding: '6px 16px', background: '#F5F5FB', borderBottom: `1px solid ${BD}` }}>
+        <div style={{ display: 'inline-flex', background: 'white', border: `1px solid ${BD}`, borderRadius: 20, padding: 3, gap: 2 }}>
+          <button onClick={() => !isNewUser && toggleUserMode()} style={{ padding: '4px 16px', borderRadius: 16, fontSize: 11, fontWeight: 600, background: isNewUser ? P : 'transparent', color: isNewUser ? 'white' : T3, border: 'none', cursor: 'pointer', transition: 'all 0.15s' }}>New User</button>
+          <button onClick={() => isNewUser && toggleUserMode()} style={{ padding: '4px 16px', borderRadius: 16, fontSize: 11, fontWeight: 600, background: !isNewUser ? P : 'transparent', color: !isNewUser ? 'white' : T3, border: 'none', cursor: 'pointer', transition: 'all 0.15s' }}>Returning User</button>
         </div>
       </div>
 
@@ -131,7 +144,7 @@ export default function Home({ navigate, savedQs, bannerDismissed, setBannerDism
             </button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {SUBJECTS.map(s => {
+            {displaySubjects.map(s => {
               const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0
               const barColor = s.accuracy >= 70 ? '#3B6D11' : s.accuracy >= 50 ? P : s.done === 0 ? BD : '#A32D2D'
               return (
