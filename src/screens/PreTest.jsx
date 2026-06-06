@@ -53,7 +53,7 @@ export default function PreTest({ navigate, startAttempt, mode, setMode }) {
           {/* Chapter info */}
           <div style={{ background: BG2, borderRadius: 12, padding: '12px 14px', marginBottom: 18 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              {[['Subject', 'Applied Anatomy'], ['Chapter', 'Anatomical Terms'], ['Questions', '21 Qs'], ['Marks', '21 Marks']].map(([k, v]) => (
+              {[['Subject', 'Applied Anatomy'], ['Chapter', 'Anatomical Terms'], ['Questions', '21 Qs']].map(([k, v]) => (
                 <div key={k}>
                   <div style={{ fontSize: 10, color: T3, fontWeight: 500, marginBottom: 2 }}>{k}</div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: T1 }}>{v}</div>

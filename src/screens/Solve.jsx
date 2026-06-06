@@ -5,8 +5,34 @@ const P='#534AB7',PL='#EEEDFE',PB='#AFA9EC',PD='#3C3489'
 const T1='#1a1a2e',T2='#5a5a78',T3='#9898b0',BD='#e8e8f2',BG2='#f5f5fb'
 
 const REPORT_OPTIONS = {
-  technical: ['App is crashing or freezing', 'Question not loading properly', 'Options not selectable', 'Other technical issue'],
-  content: ['Wrong answer marked as correct', 'Explanation is incorrect', 'Grammatical or spelling error', 'Question is out of syllabus'],
+  technical: ['App is crashing or freezing', 'Question not loading properly', 'Options not selectable', 'Timer not working correctly', 'Other technical issue'],
+  content: ['Wrong answer marked as correct', 'Explanation is incorrect', 'Grammatical or spelling error', 'Question is out of syllabus', 'Missing/incorrect reference', 'Other content issue'],
+}
+
+function TimerRing({ timeLeft, timerPerQ }) {
+  const r = 12, size = 34, cx = 17
+  const circumference = 2 * Math.PI * r
+  const progress = timerPerQ > 0 ? timeLeft / timerPerQ : 0
+  const dashOffset = circumference * (1 - progress)
+  const urgent = timeLeft <= 10
+  const color = urgent ? '#A32D2D' : P
+  const trackColor = urgent ? '#FCEBEB' : PL
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={cx} cy={cx} r={r} fill="none" stroke={trackColor} strokeWidth="3" />
+        <circle cx={cx} cy={cx} r={r} fill="none" stroke={color} strokeWidth="3"
+          strokeDasharray={`${circumference} ${circumference}`} strokeDashoffset={dashOffset}
+          strokeLinecap="round"
+          style={{ transform: `rotate(-90deg)`, transformOrigin: `${cx}px ${cx}px`, transition: 'stroke-dashoffset 0.9s linear, stroke 0.3s' }}
+        />
+        <text x={cx} y={cx + 3.5} textAnchor="middle" fontSize="8" fontWeight="700" fill={color}>{timeLeft}</text>
+      </svg>
+      <span style={{ fontSize: 11, fontWeight: 700, color, minWidth: 30 }}>
+        {String(Math.floor(timeLeft / 60)).padStart(2,'0')}:{String(timeLeft % 60).padStart(2,'0')}
+      </span>
+    </div>
+  )
 }
 
 export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, answers, setAnswers, timerPerQ, setTimerPerQ, autoAdvance, setAutoAdvance, isReviewMode, savedQs, saveQuestion, submitTest, setShowReattemptConfirm }) {
@@ -17,7 +43,8 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
   const [showExitConfirm, setShowExitConfirm] = useState(false)
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false)
   const [reportType, setReportType] = useState('technical')
-  const [reportSub, setReportSub] = useState('')
+  const [reportSubs, setReportSubs] = useState(new Set())
+  const [reportNote, setReportNote] = useState('')
   const [saveTag, setSaveTag] = useState('')
   const [reportSubmitted, setReportSubmitted] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
@@ -137,18 +164,20 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
               <span style={{ background: '#FFF3E0', color: '#E65100', border: '1px solid #FFCC80', fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20 }}>PYQ · {q.pyqExam} {q.pyqYear}</span>
             )}
           </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            {!isReviewMode && (
-              <div style={{ fontSize: 12, fontWeight: 700, color: timeLeft <= 10 ? '#A32D2D' : T3, background: timeLeft <= 10 ? '#FCEBEB' : BG2, padding: '3px 8px', borderRadius: 20 }}>{String(Math.floor(timeLeft / 60)).padStart(2, '0')}:{String(timeLeft % 60).padStart(2, '0')}</div>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            {!isReviewMode && !answered && !timedOut && (
+              <TimerRing timeLeft={timeLeft} timerPerQ={timerPerQ} />
             )}
-            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: T3 }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            </button>
-            {answered && (
-              <button onClick={() => { setSaveTag(alreadySaved?.tag || ''); setShowSaveModal(true) }} style={{ background: alreadySaved ? PL : 'none', border: `1px solid ${alreadySaved ? PB : BD}`, borderRadius: 6, padding: '4px 6px', cursor: 'pointer', color: alreadySaved ? P : T3, display: 'flex', alignItems: 'center', gap: 4 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill={alreadySaved ? P : 'none'} stroke={alreadySaved ? P : 'currentColor'} strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
-                <span style={{ fontSize: 10, fontWeight: 600 }}>Save</span>
-              </button>
+            {(answered || timedOut) && (
+              <>
+                <button style={{ background: 'none', border: `1px solid ${BD}`, borderRadius: 6, padding: '4px 6px', cursor: 'pointer', color: T3, display: 'flex', alignItems: 'center' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                </button>
+                <button onClick={() => { setSaveTag(alreadySaved?.tag || ''); setShowSaveModal(true) }} style={{ background: alreadySaved ? PL : 'none', border: `1px solid ${alreadySaved ? PB : BD}`, borderRadius: 6, padding: '4px 6px', cursor: 'pointer', color: alreadySaved ? P : T3, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill={alreadySaved ? P : 'none'} stroke={alreadySaved ? P : 'currentColor'} strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                  <span style={{ fontSize: 10, fontWeight: 600 }}>Save</span>
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -261,44 +290,50 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
         </div>
       )}
 
-      {/* Report half-sheet */}
+      {/* Report overlay */}
       {showReport && (
-        <div className="overlay" onClick={() => { setShowReport(false); setReportSubmitted(false) }}>
-          <div className="sheet" onClick={e => e.stopPropagation()}>
+        <div className="overlay" onClick={() => { setShowReport(false); setReportSubmitted(false); setReportSubs(new Set()); setReportNote('') }}>
+          <div className="sheet" style={{ maxHeight: '88%' }} onClick={e => e.stopPropagation()}>
             <div className="sheet-handle" />
-            <div className="sheet-header">
-              <span style={{ fontSize: 15, fontWeight: 700, color: T1 }}>Report Question</span>
-              <button onClick={() => { setShowReport(false); setReportSubmitted(false) }} style={{ background: 'none', border: 'none', fontSize: 22, color: T3, cursor: 'pointer' }}>×</button>
-            </div>
             {reportSubmitted ? (
               <div style={{ padding: '30px 20px 40px', textAlign: 'center' }}>
                 <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#EAF3DE', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 24 }}>✓</div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: T1, marginBottom: 6 }}>Report submitted</div>
                 <div style={{ fontSize: 13, color: T2 }}>Thank you. Our team will review this question.</div>
-                <button onClick={() => { setShowReport(false); setReportSubmitted(false) }} className="btn-primary" style={{ marginTop: 20, width: '100%' }}>Done</button>
+                <button onClick={() => { setShowReport(false); setReportSubmitted(false); setReportSubs(new Set()); setReportNote('') }} className="btn-primary" style={{ marginTop: 20, width: '100%' }}>Done</button>
               </div>
             ) : (
-              <div style={{ padding: '16px 20px 30px' }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: T2, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Issue type</div>
-                {['technical', 'content'].map(type => (
-                  <label key={type} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 0', borderBottom: `1px solid ${BD}`, cursor: 'pointer' }}>
-                    <input type="radio" name="reportType" value={type} checked={reportType === type} onChange={() => { setReportType(type); setReportSub('') }} style={{ width: 16, height: 16, accentColor: P }} />
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: T1 }}>{type === 'technical' ? 'Technical error' : 'Content error'}</div>
-                      <div style={{ fontSize: 11, color: T3 }}>{type === 'technical' ? 'App or display issues' : 'Wrong answer, explanation, or question text'}</div>
-                    </div>
-                  </label>
-                ))}
-                <div style={{ marginTop: 14 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: T2, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Describe the issue</div>
-                  {REPORT_OPTIONS[reportType].map(opt => (
-                    <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', cursor: 'pointer' }}>
-                      <input type="radio" name="reportSub" value={opt} checked={reportSub === opt} onChange={() => setReportSub(opt)} style={{ width: 16, height: 16, accentColor: P }} />
-                      <span style={{ fontSize: 13, color: T1 }}>{opt}</span>
-                    </label>
-                  ))}
+              <div style={{ overflowY: 'auto', flex: 1 }}>
+                <div style={{ padding: '14px 20px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${BD}` }}>
+                  <span style={{ fontSize: 16, fontWeight: 700, color: T1 }}>Report an Error</span>
+                  <button onClick={() => { setShowReport(false); setReportSubs(new Set()); setReportNote('') }} style={{ background: 'none', border: 'none', fontSize: 22, color: T3, cursor: 'pointer', lineHeight: 1 }}>×</button>
                 </div>
-                <button onClick={() => reportSub && setReportSubmitted(true)} className="btn-primary" style={{ width: '100%', marginTop: 16, opacity: reportSub ? 1 : 0.5 }}>Submit Report</button>
+                <div style={{ padding: '16px 20px 30px' }}>
+                  {/* Error type — side by side */}
+                  <div style={{ display: 'flex', gap: 16, marginBottom: 18 }}>
+                    {['technical', 'content'].map(type => (
+                      <label key={type} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                        <input type="radio" name="reportType" value={type} checked={reportType === type} onChange={() => { setReportType(type); setReportSubs(new Set()) }} style={{ width: 18, height: 18, accentColor: P }} />
+                        <span style={{ fontSize: 13, fontWeight: 600, color: T1 }}>{type === 'technical' ? 'Technical Error' : 'Content Error'}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {/* Checkboxes — multi-select */}
+                  <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
+                    {REPORT_OPTIONS[reportType].map(opt => (
+                      <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 0', borderBottom: `1px solid ${BD}`, cursor: 'pointer' }}>
+                        <input type="checkbox" checked={reportSubs.has(opt)} onChange={() => setReportSubs(prev => { const n = new Set(prev); n.has(opt) ? n.delete(opt) : n.add(opt); return n })} style={{ width: 18, height: 18, accentColor: P, flexShrink: 0 }} />
+                        <span style={{ fontSize: 13, color: T1 }}>{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {/* Optional notes */}
+                  <div style={{ marginBottom: 18 }}>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: T2, marginBottom: 8 }}>Tell us more about it. <span style={{ color: T3 }}>(optional)</span></div>
+                    <textarea value={reportNote} onChange={e => setReportNote(e.target.value)} placeholder="Describe the issue in more detail..." style={{ width: '100%', minHeight: 80, padding: '10px 12px', border: `1px solid ${BD}`, borderRadius: 10, fontSize: 13, color: T1, resize: 'vertical', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                  <button onClick={() => setReportSubmitted(true)} className="btn-primary" style={{ width: '100%' }}>Submit</button>
+                </div>
               </div>
             )}
           </div>
