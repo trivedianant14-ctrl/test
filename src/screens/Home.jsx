@@ -25,7 +25,8 @@ const NavBar = ({ navigate }) => {
 }
 
 export default function Home({ navigate, savedQs, bannerDismissed, setBannerDismissed, unsaveQuestion }) {
-  const todayQs = 12, overallAcc = 71
+  const todayQs = 0, overallAcc = 0
+  const isFirstTime = todayQs === 0
   const [continueDismissed, setContinueDismissed] = useState(false)
 
   return (
@@ -42,32 +43,37 @@ export default function Home({ navigate, savedQs, bannerDismissed, setBannerDism
       {/* Header */}
       <div style={{ padding: '6px 20px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, borderBottom: `1px solid ${BD}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* Avatar */}
           <div style={{ width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg, ${P}, #8B82E0)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 14 }}>A</div>
           <span style={{ fontSize: 17, fontWeight: 700, color: T1 }}>Question Bank</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button style={{ background: 'none', border: 'none', color: T2, display: 'flex' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          </button>
-        </div>
+        <button style={{ background: 'none', border: 'none', color: T2, display: 'flex' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </button>
       </div>
 
-      {/* Daily Progress — sticky strip */}
+      {/* Stats strip — first-time vs returning */}
       <div style={{ flexShrink: 0, padding: '10px 16px', borderBottom: `1px solid ${BD}`, background: 'white' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', border: `1px solid ${BD}`, borderRadius: 14, padding: 14 }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 11, color: T3, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 500 }}>Daily Progress</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+        {isFirstTime ? (
+          /* First-time: direction CTA */
+          <div style={{ background: 'white', border: `1px solid ${BD}`, borderRadius: 14, padding: '16px 14px' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: T1, marginBottom: 5 }}>Start your first practice session</div>
+            <div style={{ fontSize: 12, color: T3, lineHeight: 1.5, marginBottom: 14 }}>Your accuracy and daily progress will appear here once you begin</div>
+            <button onClick={() => navigate('pretest')} className="btn-primary" style={{ padding: '9px 20px', fontSize: 13 }}>Attempt →</button>
+          </div>
+        ) : (
+          /* Returning: progress stats */
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', border: `1px solid ${BD}`, borderRadius: 14, padding: 14 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, color: T3, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 500 }}>Daily Progress</div>
               <span style={{ fontSize: 26, fontWeight: 700, color: T1 }}>{todayQs}</span>
+              <div style={{ fontSize: 11, color: T3, marginTop: 2 }}>Question Attempted</div>
             </div>
-            <div style={{ fontSize: 11, color: T3, marginTop: 2 }}>Question Attempted</div>
+            <div style={{ marginLeft: 14, textAlign: 'center', background: BG2, borderRadius: 10, padding: '8px 14px' }}>
+              <div style={{ fontSize: 11, color: T3, marginBottom: 2 }}>Overall Accuracy</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: overallAcc >= 70 ? '#3B6D11' : overallAcc >= 50 ? P : '#A32D2D' }}>{overallAcc}%</div>
+            </div>
           </div>
-          <div style={{ marginLeft: 14, textAlign: 'center', background: BG2, borderRadius: 10, padding: '8px 14px' }}>
-            <div style={{ fontSize: 11, color: T3, marginBottom: 2 }}>Overall Accuracy</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: overallAcc >= 70 ? '#3B6D11' : overallAcc >= 50 ? P : '#A32D2D' }}>{overallAcc}%</div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Scrollable content */}
@@ -89,13 +95,30 @@ export default function Home({ navigate, savedQs, bannerDismissed, setBannerDism
           </div>
         )}
 
-        {/* Saved Questions Link */}
+        {/* Saved questions — first-time: educational info box; returning: CTA link */}
         <div style={{ margin: '10px 16px 0' }}>
-          <button onClick={() => navigate('saved')} style={{ width: '100%', background: PL, border: `1px solid ${PB}`, borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', textAlign: 'left' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="2.2" strokeLinecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
-            <span style={{ fontSize: 13, fontWeight: 600, color: PD, flex: 1 }}>Click Here to view your saved questions</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
+          {isFirstTime ? (
+            /* Guided info box — looks like a tip, still clickable to saved screen */
+            <div onClick={() => navigate('saved')} style={{ background: BG2, border: `1px solid ${BD}`, borderRadius: 12, padding: '12px 14px', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: PL, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="2.2" strokeLinecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: T1, marginBottom: 3 }}>
+                    Use <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="2.5" strokeLinecap="round" style={{ display: 'inline', verticalAlign: 'middle', marginBottom: 1 }}><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg> to view your Saved Questions
+                  </div>
+                  <div style={{ fontSize: 11, color: T3, lineHeight: 1.5 }}>You can log questions as tricky, wrong, important or weak areas — for analysis.</div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => navigate('saved')} style={{ width: '100%', background: PL, border: `1px solid ${PB}`, borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', textAlign: 'left' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="2.2" strokeLinecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+              <span style={{ fontSize: 13, fontWeight: 600, color: PD, flex: 1 }}>Click Here to view your saved questions</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          )}
         </div>
 
         {/* Subjects */}
@@ -132,9 +155,9 @@ export default function Home({ navigate, savedQs, bannerDismissed, setBannerDism
 
       </div>
 
-      {/* Sticky continue + nav */}
+      {/* Sticky continue + nav — continue hidden for first-time users */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'white' }}>
-        {!continueDismissed && (
+        {!isFirstTime && !continueDismissed && (
           <div style={{ padding: '8px 16px 6px', borderTop: `1px solid ${BD}` }}>
             <div style={{ display: 'flex', alignItems: 'center', background: PL, border: `1px solid ${PB}`, borderRadius: 10, overflow: 'hidden' }}>
               <button onClick={() => navigate('pretest')} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', minWidth: 0 }}>
