@@ -5,8 +5,13 @@ const P='#534AB7',PL='#EEEDFE',PD='#3C3489'
 const T1='#1a1a2e',T2='#5a5a78',T3='#9898b0',BD='#e8e8f2',BG2='#f5f5fb'
 const GREEN='#3B6D11',RED='#A32D2D'
 
+const RATING_LABELS = ['', 'Too easy', 'A bit easy', 'Just right', 'Challenging', 'Very tough']
+
 export default function Result({ navigate, answers, mode, viewSolution, setShowReattemptConfirm, showReattemptConfirm, handleReattempt }) {
   const [showAllWrong, setShowAllWrong] = useState(false)
+  const [rating, setRating] = useState(0)
+  const [feedbackNote, setFeedbackNote] = useState('')
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false)
 
   const correct = QUESTIONS.filter(q => answers[q.id] === q.correct).length
   const incorrect = QUESTIONS.filter(q => answers[q.id] && answers[q.id] !== q.correct && answers[q.id] !== 'timeout').length
@@ -193,6 +198,52 @@ export default function Result({ navigate, answers, mode, viewSolution, setShowR
           </div>
         )}
 
+
+        {/* Test feedback / rating */}
+        <div style={{ border: `1px solid ${BD}`, borderRadius: 14, padding: '14px 16px', marginBottom: 12 }}>
+          {feedbackSubmitted ? (
+            <div style={{ textAlign: 'center', padding: '8px 0' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: T1, marginBottom: 3 }}>Thanks for your feedback!</div>
+              <div style={{ fontSize: 12, color: T3 }}>It helps us improve the question set.</div>
+            </div>
+          ) : (
+            <>
+              <div style={{ fontSize: 13, fontWeight: 700, color: T1, marginBottom: 3 }}>How was this test?</div>
+              <div style={{ fontSize: 12, color: T3, marginBottom: 14 }}>Rate the difficulty level of this question set</div>
+
+              {/* 5-star row */}
+              <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+                {[1, 2, 3, 4, 5].map(n => (
+                  <button key={n} onClick={() => setRating(n)} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: `1.5px solid ${rating >= n ? P : BD}`, background: rating >= n ? PL : 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill={rating >= n ? P : 'none'} stroke={rating >= n ? P : BD} strokeWidth="1.8">
+                      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                    </svg>
+                  </button>
+                ))}
+              </div>
+
+              {/* Rating label */}
+              {rating > 0 && (
+                <div style={{ fontSize: 12, color: P, fontWeight: 600, textAlign: 'center', marginBottom: 12 }}>{RATING_LABELS[rating]}</div>
+              )}
+
+              {/* Optional comment */}
+              <textarea
+                value={feedbackNote}
+                onChange={e => setFeedbackNote(e.target.value)}
+                placeholder="Anything to add? (optional)"
+                style={{ width: '100%', minHeight: 60, padding: '9px 12px', border: `1px solid ${BD}`, borderRadius: 10, fontSize: 12, color: T1, resize: 'none', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 12 }}
+              />
+
+              <button
+                onClick={() => { if (rating > 0) setFeedbackSubmitted(true) }}
+                style={{ width: '100%', padding: '10px', borderRadius: 10, border: `1.5px solid ${rating > 0 ? P : BD}`, background: rating > 0 ? PL : 'white', cursor: rating > 0 ? 'pointer' : 'default', fontSize: 13, fontWeight: 700, color: rating > 0 ? PD : T3, transition: 'all 0.15s' }}
+              >
+                Submit Feedback
+              </button>
+            </>
+          )}
+        </div>
 
       </div>
 
