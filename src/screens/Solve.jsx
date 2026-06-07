@@ -9,6 +9,17 @@ const REPORT_OPTIONS = {
   content: ['Wrong answer marked as correct', 'Explanation is incorrect', 'Grammatical or spelling error', 'Question is out of syllabus', 'Missing/incorrect reference', 'Other content issue'],
 }
 
+const SKIP_REASONS = [
+  { id: 'time',      label: 'Ran out of time' },
+  { id: 'strategic', label: 'Strategic skip — protecting score' },
+  { id: 'blank',     label: 'Mind went blank' },
+  { id: 'confusing', label: 'Confusing wording' },
+  { id: 'fatigue',   label: 'Tired or distracted' },
+  { id: 'habit',     label: 'I usually skip these' },
+  { id: 'exploring', label: 'Just exploring' },
+  { id: 'unknown',   label: "Don't know this topic" },
+]
+
 function TimerRing({ timeLeft, timerPerQ }) {
   const r = 12, size = 34, cx = 17
   const circumference = 2 * Math.PI * r
@@ -58,6 +69,10 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
   const [audioPlaying, setAudioPlaying] = useState(false)
   const [clinicalOpen, setClinicalOpen] = useState(false)
   const [fontSize, setFontSize] = useState(14)
+  const [showSkipSurvey, setShowSkipSurvey] = useState(false)
+  const [skipReason, setSkipReason] = useState(null)
+  const [skipNote, setSkipNote] = useState('')
+  const [pendingNavNext, setPendingNavNext] = useState(false)
 
   const q = QUESTIONS[currentQ]
   const answered = answers[q?.id] !== undefined
@@ -129,7 +144,27 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
     setAudioPlaying(false)
     setGlossaryTerm(null)
     setClinicalOpen(false)
+    setShowSkipSurvey(false)
+    setSkipReason(null)
+    setSkipNote('')
+    setPendingNavNext(false)
   }, [currentQ])
+
+  // Show skip survey 0.8s after timeout
+  useEffect(() => {
+    if (!timedOut) return
+    const t = setTimeout(() => setShowSkipSurvey(true), 800)
+    return () => clearTimeout(t)
+  }, [timedOut])
+
+  const dismissSkipSurvey = () => {
+    const navigate = pendingNavNext
+    setShowSkipSurvey(false)
+    setSkipReason(null)
+    setSkipNote('')
+    setPendingNavNext(false)
+    if (navigate) setCurrentQ(c => c + 1)
+  }
 
   const renderExplanationText = (text, glossary) => {
     if (!text) return null
@@ -425,7 +460,14 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
         )}
         {isLastQ
           ? <button onClick={() => isReviewMode ? navigate('result') : setShowSubmitConfirm(true)} className="btn-primary" style={{ flex: 2 }}>{isReviewMode ? 'Done' : 'Submit'}</button>
-          : <button onClick={() => setCurrentQ(c => c + 1)} className="btn-primary" style={{ flex: currentQ === 0 ? 1 : 2 }}>Next →</button>
+          : <button onClick={() => {
+              if (!answered && !timedOut && !isReviewMode) {
+                setPendingNavNext(true)
+                setShowSkipSurvey(true)
+                return
+              }
+              setCurrentQ(c => c + 1)
+            }} className="btn-primary" style={{ flex: currentQ === 0 ? 1 : 2 }}>Next →</button>
         }
       </div>
 
@@ -569,6 +611,54 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
                 <button onClick={handleSave} className="btn-primary" style={{ width: '100%', marginTop: 8, opacity: saveTag ? 1 : 0.5 }}>Save Question</button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Skip survey — half-sheet */}
+      {showSkipSurvey && (
+        <div className="overlay" onClick={dismissSkipSurvey}>
+          <div className="sheet" onClick={e => e.stopPropagation()}>
+            <div className="sheet-handle" />
+            <div style={{ padding: '16px 20px 32px' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: T1, marginBottom: 4 }}>Mind if we ask why you skipped this?</div>
+              <div style={{ fontSize: 12, color: T3, lineHeight: 1.5, marginBottom: 16 }}>Helps NPrep understand your patterns — takes 5 seconds</div>
+
+              {/* Reason pills — 2 column grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+                {SKIP_REASONS.map(r => (
+                  <button key={r.id}
+                    onClick={() => setSkipReason(skipReason === r.id ? null : r.id)}
+                    style={{ padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${skipReason === r.id ? P : BD}`, background: skipReason === r.id ? PL : 'white', cursor: 'pointer', textAlign: 'left', fontSize: 12, fontWeight: skipReason === r.id ? 700 : 500, color: skipReason === r.id ? PD : T1, lineHeight: 1.35 }}>
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* "Just exploring" note */}
+              {skipReason === 'exploring' && (
+                <div style={{ background: BG2, border: `1px solid ${BD}`, borderRadius: 8, padding: '9px 12px', marginBottom: 12, fontSize: 11, color: T2, lineHeight: 1.5 }}>
+                  Got it — this won't be counted in your performance analysis.
+                </div>
+              )}
+
+              {/* Optional free text */}
+              <textarea
+                value={skipNote}
+                onChange={e => setSkipNote(e.target.value)}
+                placeholder="Anything else? (optional)"
+                style={{ width: '100%', minHeight: 58, padding: '9px 12px', border: `1px solid ${BD}`, borderRadius: 10, fontSize: 12, color: T1, resize: 'none', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 14 }}
+              />
+
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={dismissSkipSurvey} style={{ flex: 1, padding: '10px', borderRadius: 10, border: `1px solid ${BD}`, background: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: T2 }}>
+                  {pendingNavNext ? 'Skip & Next' : 'Dismiss'}
+                </button>
+                <button onClick={dismissSkipSurvey} className="btn-primary" style={{ flex: 2 }}>
+                  {pendingNavNext ? 'Submit & Next →' : 'Done'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
