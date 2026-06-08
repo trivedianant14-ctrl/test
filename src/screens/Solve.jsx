@@ -43,7 +43,7 @@ function TimerRing({ timeLeft, timerPerQ }) {
   )
 }
 
-export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, answers, setAnswers, timerPerQ, setTimerPerQ, autoAdvance, setAutoAdvance, isReviewMode, savedQs, saveQuestion, submitTest, setShowReattemptConfirm }) {
+export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, answers, setAnswers, timerPerQ, setTimerPerQ, autoAdvance, setAutoAdvance, isReviewMode, savedQs, saveQuestion, submitTest, setShowReattemptConfirm, attemptCount }) {
   const [showSettings, setShowSettings] = useState(false)
   const [showReport, setShowReport] = useState(false)
   const [showSaveModal, setShowSaveModal] = useState(false)
@@ -69,6 +69,8 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
   const [showSkipSurvey, setShowSkipSurvey] = useState(false)
   const [skipReason, setSkipReason] = useState(null)
   const [skipNote, setSkipNote] = useState('')
+  const [nudgeShownThisAttempt, setNudgeShownThisAttempt] = useState(false)
+  const [showBlockMsg, setShowBlockMsg] = useState(false)
 
   const q = QUESTIONS[currentQ]
   const answered = answers[q?.id] !== undefined
@@ -96,6 +98,16 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
     return () => clearInterval(interval)
   }, [currentQ, answered, timerPerQ, isReviewMode])
 
+  // Auto-open skip survey (nudge) on first timeout in attempts 1–3
+  useEffect(() => {
+    if (!timedOut) return
+    if (attemptCount <= 3 && !nudgeShownThisAttempt) {
+      setNudgeShownThisAttempt(true)
+      const t = setTimeout(() => setShowSkipSurvey(true), 700)
+      return () => clearTimeout(t)
+    }
+  }, [timedOut]) // eslint-disable-line
+
   const handleAnswer = (optId) => {
     if (answered || timedOut || isReviewMode) return
     setAnswers(a => ({ ...a, [q.id]: optId }))
@@ -121,6 +133,15 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
     return { bg: '#FCEBEB', c: '#791F1F', border: '#F09595' }
   }
 
+  const handleNext = () => {
+    if (!answered && !timedOut && !isReviewMode) {
+      setShowBlockMsg(true)
+      setTimeout(() => setShowBlockMsg(false), 2200)
+      return
+    }
+    setCurrentQ(c => c + 1)
+  }
+
   const handleSubmit = () => { setShowSubmitConfirm(false); submitTest() }
   const handleSave = () => {
     if (saveTag) {
@@ -130,7 +151,8 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
     }
   }
 
-  const unattempted = QUESTIONS.filter(q => !answers[q.id]).length
+  const skipped = QUESTIONS.filter(q => answers[q.id] === 'timeout').length
+  const unanswered = QUESTIONS.filter(q => !answers[q.id]).length
 
   const showGuideContent = isReviewMode || (answered && mode === 'guide')
   const showPYQtag = q?.isPYQ && (mode === 'guide' || isReviewMode)
@@ -143,6 +165,7 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
     setShowSkipSurvey(false)
     setSkipReason(null)
     setSkipNote('')
+    setShowBlockMsg(false)
   }, [currentQ])
 
   const dismissSkipSurvey = () => {
@@ -252,10 +275,10 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
         </div>
 
         {/* Feedback banner + inline quick-save */}
-        {isReviewMode && !answered && (
+        {isReviewMode && selected === 'timeout' && (
           <div style={{ marginBottom: 12, textAlign: 'center' }}>
             <button onClick={() => setShowSkipSurvey(true)} style={{ background: 'none', border: 'none', fontSize: 12, color: T3, cursor: 'pointer', padding: '2px 0' }}>
-              Why did you leave this unattempted? →
+              Why did you skip this question? →
             </button>
           </div>
         )}
@@ -264,7 +287,7 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
             <div style={{ background: '#FFF3E0', border: '1px solid #FFB74D', borderRadius: 10, padding: '10px 14px', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#E65100', textAlign: 'center' }}>Oops you ran out of time.</div>
             <div style={{ textAlign: 'center' }}>
               <button onClick={() => setShowSkipSurvey(true)} style={{ background: 'none', border: 'none', fontSize: 12, color: T3, cursor: 'pointer', padding: '2px 0' }}>
-                Why did you leave this unattempted? →
+                Why did you skip this question? →
               </button>
             </div>
           </div>
@@ -461,14 +484,19 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
       </div>
 
       {/* Bottom navigation */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'white', borderTop: `1px solid ${BD}`, padding: '12px 16px' }}>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'white', borderTop: `1px solid ${BD}`, padding: '8px 16px 12px' }}>
+        {showBlockMsg && (
+          <div style={{ textAlign: 'center', marginBottom: 6, fontSize: 11, fontWeight: 600, color: '#A32D2D' }}>
+            Select an answer to move on ↑
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 10 }}>
           {currentQ > 0 && (
             <button onClick={() => setCurrentQ(c => c - 1)} className="btn-outline" style={{ flex: 1 }}>Previous</button>
           )}
           {isLastQ
             ? <button onClick={() => isReviewMode ? navigate('result') : setShowSubmitConfirm(true)} className="btn-primary" style={{ flex: 2 }}>{isReviewMode ? 'Done' : 'Submit'}</button>
-            : <button onClick={() => setCurrentQ(c => c + 1)} className="btn-primary" style={{ flex: currentQ === 0 ? 1 : 2 }}>Next →</button>
+            : <button onClick={handleNext} className="btn-primary" style={{ flex: currentQ === 0 ? 1 : 2, opacity: (!answered && !timedOut && !isReviewMode) ? 0.5 : 1 }}>Next →</button>
           }
         </div>
       </div>
@@ -621,7 +649,7 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
           <div className="sheet" onClick={e => e.stopPropagation()}>
             <div className="sheet-handle" />
             <div style={{ padding: '16px 20px 32px' }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: T1, marginBottom: 4 }}>Why did you leave this unattempted?</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: T1, marginBottom: 4 }}>Why did you skip this question?</div>
               <div style={{ fontSize: 12, color: T3, lineHeight: 1.5, marginBottom: 16 }}>Helps NPrep understand your patterns — takes 5 seconds</div>
 
               {/* Reason pills — 2 column grid */}
@@ -697,8 +725,7 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
                         <div><span style={{ fontSize: 17, fontWeight: 800, color: '#791F1F' }}>{String(gridIncorrect).padStart(2,'0')}</span> <span style={{ fontSize: 11, color: T3 }}>Incorrect</span></div>
                       </div>
                       <div style={{ display: 'flex', gap: 22 }}>
-                        <div><span style={{ fontSize: 17, fontWeight: 800, color: '#E65100' }}>{String(gridMissed).padStart(2,'0')}</span> <span style={{ fontSize: 11, color: T3 }}>Missed</span></div>
-                        <div><span style={{ fontSize: 17, fontWeight: 800, color: T1 }}>{gridUnattempted}</span> <span style={{ fontSize: 11, color: T3 }}>Unattempted</span></div>
+                        <div><span style={{ fontSize: 17, fontWeight: 800, color: '#E65100' }}>{String(gridMissed).padStart(2,'0')}</span> <span style={{ fontSize: 11, color: T3 }}>Skipped</span></div>
                       </div>
                     </div>
                     <div style={{ paddingLeft: 16, borderLeft: `1px solid ${BD}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 64 }}>
@@ -751,7 +778,7 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
           <div className="popup">
             <div style={{ fontSize: 17, fontWeight: 700, color: T1, marginBottom: 8 }}>Submit test?</div>
             <div style={{ fontSize: 13, color: T2, marginBottom: 20, lineHeight: 1.5 }}>
-              {unattempted > 0 ? `You have ${unattempted} unattempted question${unattempted > 1 ? 's' : ''}. Unattempted questions will be marked as incorrect.` : 'Are you sure you want to submit?'}
+              {unanswered > 0 ? `You have ${unanswered} question${unanswered > 1 ? 's' : ''} without an answer. These will be counted as skipped.` : skipped > 0 ? `${skipped} question${skipped > 1 ? 's were' : ' was'} skipped due to time running out.` : 'Are you sure you want to submit?'}
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setShowSubmitConfirm(false)} className="btn-outline" style={{ flex: 1 }}>Review</button>

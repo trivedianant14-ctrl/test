@@ -32,6 +32,7 @@ export default function App() {
   const [currentVideo, setCurrentVideo] = useState(null)
   const [sessions, setSessions] = useState([])
   const [isReattempt, setIsReattempt] = useState(false)
+  const [attemptCount, setAttemptCount] = useState(0)
 
   const toggleUserMode = () => {
     const switchingToExisting = isNewUser
@@ -47,6 +48,7 @@ export default function App() {
     setCurrentQ(0)
     setAnswers({})
     setIsReviewMode(false)
+    setAttemptCount(c => c + 1)
     setScreen('solve')
   }
 
@@ -99,6 +101,7 @@ export default function App() {
     setCurrentQ(0)
     setAnswers({})
     setIsReviewMode(false)
+    setAttemptCount(c => c + 1)
     setScreen('solve')
   }
 
@@ -133,6 +136,7 @@ export default function App() {
     handleReattempt, viewSolution,
     sessions, todayQs, overallAcc, lastSession,
     isReattempt, viewAnalysis,
+    attemptCount,
   }
 
   return (
