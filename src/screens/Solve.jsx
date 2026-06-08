@@ -430,19 +430,21 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
                       </div>
                     )}
 
-                    {/* Video CTA — shown in every tab */}
-                    <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${BD}` }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-                        <div style={{ width: 36, height: 36, borderRadius: 9, background: '#FFE082', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="#E65100"><polygon points="5,3 19,12 5,21"/></svg>
+                    {/* Video CTA — shown in all tabs except reference */}
+                    {activeTab !== 'reference' && (
+                      <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${BD}` }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                          <div style={{ width: 36, height: 36, borderRadius: 9, background: '#FFE082', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="#E65100"><polygon points="5,3 19,12 5,21"/></svg>
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: '#5D4037' }}>Want to learn more? Watch the chapter video.</div>
+                            <div style={{ fontSize: 11, color: '#8D6E63', marginTop: 1 }}>{q?.learnTopic} · Chapter overview · 12 min</div>
+                          </div>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E65100" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
                         </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: '#5D4037' }}>Want to learn more? Watch the chapter video.</div>
-                          <div style={{ fontSize: 11, color: '#8D6E63', marginTop: 1 }}>{q?.learnTopic} · Chapter overview · 12 min</div>
-                        </div>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E65100" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
                       </div>
-                    </div>
+                    )}
 
                   </div>
                 </div>
