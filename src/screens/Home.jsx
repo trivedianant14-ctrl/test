@@ -24,15 +24,21 @@ const NavBar = ({ navigate }) => {
   )
 }
 
-export default function Home({ navigate, savedQs, bannerDismissed, setBannerDismissed, unsaveQuestion, isNewUser, toggleUserMode }) {
-  const todayQs = isNewUser ? 0 : 12
-  const overallAcc = isNewUser ? 0 : 71
-  const isFirstTime = isNewUser
+export default function Home({ navigate, savedQs, bannerDismissed, setBannerDismissed, unsaveQuestion, isNewUser, toggleUserMode, todayQs: realTodayQs, overallAcc: realOverallAcc, sessions, lastSession }) {
+  const hasSessions = sessions && sessions.length > 0
+  const todayQs = isNewUser ? (hasSessions ? realTodayQs : 0) : 12
+  const overallAcc = isNewUser ? (hasSessions ? realOverallAcc : 0) : 71
+  const isFirstTime = isNewUser && !hasSessions
   const [continueDismissed, setContinueDismissed] = useState(false)
   const [showSubjectIdx, setShowSubjectIdx] = useState(false)
 
   const displaySubjects = isNewUser
-    ? SUBJECTS.map(s => ({ ...s, done: 0, accuracy: 0 }))
+    ? SUBJECTS.map(s => {
+        if (s.id === 1 && hasSessions && lastSession) {
+          return { ...s, done: lastSession.total, accuracy: lastSession.accuracy }
+        }
+        return { ...s, done: 0, accuracy: 0 }
+      })
     : SUBJECTS
 
   return (
@@ -210,7 +216,9 @@ export default function Home({ navigate, savedQs, bannerDismissed, setBannerDism
                 <svg width="14" height="14" viewBox="0 0 24 24" fill={P} style={{ flexShrink: 0 }}><polygon points="5,3 19,12 5,21"/></svg>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 10, color: P, marginBottom: 1 }}>Continue where you left off</div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: PD, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Applied Anatomy · Anatomical Terms</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: PD, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {lastSession ? `${lastSession.subjectName} · ${lastSession.chapterName}` : 'Applied Anatomy · Anatomical Terms'}
+                  </div>
                 </div>
                 <span style={{ background: P, borderRadius: 6, padding: '5px 10px', fontSize: 11, fontWeight: 600, color: 'white', whiteSpace: 'nowrap', flexShrink: 0 }}>Resume →</span>
               </button>

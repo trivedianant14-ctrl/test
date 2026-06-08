@@ -26,13 +26,27 @@ const NavBar = ({ navigate }) => {
 
 const IDX_CHAPTERS = ['Anatomical Terms', 'Skeletal System', 'Muscular System', 'Nervous System', 'Cardiovascular System', 'Respiratory System', 'Integumentary System', 'Endocrine System']
 
-export default function Subject({ navigate, isNewUser }) {
+export default function Subject({ navigate, isNewUser, sessions }) {
   const [filter, setFilter] = useState('all')
   const [showIdx, setShowIdx] = useState(false)
 
-  const displayChapters = isNewUser
-    ? CHAPTERS.map(c => ({ ...c, state: 'unattempted', prog: undefined, res: undefined }))
-    : CHAPTERS
+  // Real session data for chapter 1
+  const ch1Sessions = (sessions || []).filter(s => s.chapterId === 1)
+  const latestCh1 = ch1Sessions.length > 0 ? ch1Sessions[ch1Sessions.length - 1] : null
+
+  const displayChapters = CHAPTERS.map(c => {
+    // Chapter 1 gets dynamic state from real sessions
+    if (c.id === 1 && latestCh1) {
+      return {
+        ...c,
+        state: 'completed',
+        res: { correct: latestCh1.correct, total: latestCh1.total, pct: latestCh1.accuracy },
+      }
+    }
+    // Other chapters: new user sees all unattempted, returning user sees hardcoded data
+    if (isNewUser) return { ...c, state: 'unattempted', prog: undefined, res: undefined }
+    return c
+  })
 
   const doneChapters = displayChapters.filter(c => c.state === 'completed').length
   const totalChapters = displayChapters.length
@@ -57,7 +71,7 @@ export default function Subject({ navigate, isNewUser }) {
           </div>
           <span style={{ background: '#EAF3DE', color: '#27500A', fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 20 }}>✓ Done</span>
         </div>
-        <div style={{ fontSize: 11, color: T2, marginBottom: 9 }}>{c.res.correct}/{c.res.total} correct · {c.res.pct}th percentile</div>
+        <div style={{ fontSize: 11, color: T2, marginBottom: 9 }}>{c.res.correct}/{c.res.total} correct · {c.res.pct}% accuracy</div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
           <button className="btn-sm-outline" onClick={() => navigate('pretest')}>Re-attempt</button>
           <button className="btn-sm-primary" onClick={() => navigate('result')}>View Analysis →</button>

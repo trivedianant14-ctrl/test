@@ -8,6 +8,7 @@ import Saved from './screens/Saved'
 import Videos from './screens/Videos'
 import VideoSubject from './screens/VideoSubject'
 import VideoPlayer from './screens/VideoPlayer'
+import { QUESTIONS } from './data'
 
 const EXISTING_USER_SAVES = [
   { qId: 1, tag: 'wrong' },
@@ -29,6 +30,7 @@ export default function App() {
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const [showReattemptConfirm, setShowReattemptConfirm] = useState(false)
   const [currentVideo, setCurrentVideo] = useState(null)
+  const [sessions, setSessions] = useState([])
 
   const toggleUserMode = () => {
     const switchingToExisting = isNewUser
@@ -60,6 +62,21 @@ export default function App() {
   }
 
   const submitTest = () => {
+    const correct = QUESTIONS.filter(q => answers[q.id] === q.correct).length
+    const total = QUESTIONS.length
+    const accuracy = Math.round((correct / total) * 100)
+    setSessions(prev => [...prev, {
+      id: Date.now(),
+      chapterId: 1,
+      chapterName: 'Anatomical Terms',
+      subjectName: 'Applied Anatomy',
+      mode,
+      answers: { ...answers },
+      correct,
+      total,
+      accuracy,
+      completedAt: Date.now(),
+    }])
     setScreen('result')
   }
 
@@ -77,6 +94,16 @@ export default function App() {
     setScreen('solve')
   }
 
+  // Derived stats from real sessions
+  const todayStr = new Date().toDateString()
+  const todayQs = sessions
+    .filter(s => new Date(s.completedAt).toDateString() === todayStr)
+    .reduce((sum, s) => sum + s.total, 0)
+  const overallAcc = sessions.length > 0
+    ? Math.round(sessions.reduce((sum, s) => sum + s.accuracy, 0) / sessions.length)
+    : 0
+  const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null
+
   const sharedProps = {
     navigate, mode, setMode,
     currentQ, setCurrentQ,
@@ -90,6 +117,7 @@ export default function App() {
     startAttempt, submitTest,
     showReattemptConfirm, setShowReattemptConfirm,
     handleReattempt, viewSolution,
+    sessions, todayQs, overallAcc, lastSession,
   }
 
   return (
