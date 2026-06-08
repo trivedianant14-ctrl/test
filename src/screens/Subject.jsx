@@ -104,10 +104,7 @@ export default function Subject({ navigate, isNewUser, sessions, viewSolution })
         </div>
         <div style={{ fontSize: 11, color: T3, marginBottom: 9 }}>{c.qs} Ques</div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
-          {c.vid
-            ? <button className="btn-sm-purple-outline" onClick={() => navigate('videosubject')}>Learn</button>
-            : <button className="btn-sm-outline" disabled style={{ opacity: 0.4 }}>No video</button>
-          }
+          {c.vid && <button className="btn-sm-purple-outline" onClick={() => navigate('videosubject')}>Learn</button>}
           <button className="btn-sm-primary" onClick={() => navigate('pretest')}>Attempt</button>
         </div>
       </div>
