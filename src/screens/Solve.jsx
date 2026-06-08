@@ -72,6 +72,7 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
   const [showSkipSurvey, setShowSkipSurvey] = useState(false)
   const [skipReason, setSkipReason] = useState(null)
   const [skipNote, setSkipNote] = useState('')
+  const [pendingNavNext, setPendingNavNext] = useState(false)
 
   const q = QUESTIONS[currentQ]
   const answered = answers[q?.id] !== undefined
@@ -146,12 +147,26 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
     setShowSkipSurvey(false)
     setSkipReason(null)
     setSkipNote('')
+    setPendingNavNext(false)
   }, [currentQ])
 
   const dismissSkipSurvey = () => {
     setShowSkipSurvey(false)
     setSkipReason(null)
     setSkipNote('')
+    if (pendingNavNext) {
+      setPendingNavNext(false)
+      setCurrentQ(c => c + 1)
+    }
+  }
+
+  const handleNext = () => {
+    if (mode === 'exam' && !answered && !timedOut && !isReviewMode) {
+      setShowSkipSurvey(true)
+      setPendingNavNext(true)
+    } else {
+      setCurrentQ(c => c + 1)
+    }
   }
 
   const renderExplanationText = (text, glossary) => {
@@ -260,7 +275,7 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
             <div style={{ background: '#FFF3E0', border: '1px solid #FFB74D', borderRadius: 10, padding: '10px 14px', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#E65100', textAlign: 'center' }}>Oops you ran out of time.</div>
             <div style={{ textAlign: 'center' }}>
               <button onClick={() => setShowSkipSurvey(true)} style={{ background: 'none', border: 'none', fontSize: 12, color: T3, cursor: 'pointer', padding: '2px 0' }}>
-                Mind sharing what happened? →
+                Why did you leave this unattempted? →
               </button>
             </div>
           </div>
@@ -464,7 +479,7 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
         )}
         {isLastQ
           ? <button onClick={() => isReviewMode ? navigate('result') : setShowSubmitConfirm(true)} className="btn-primary" style={{ flex: 2 }}>{isReviewMode ? 'Done' : 'Submit'}</button>
-          : <button onClick={() => setCurrentQ(c => c + 1)} className="btn-primary" style={{ flex: currentQ === 0 ? 1 : 2 }}>Next →</button>
+          : <button onClick={handleNext} className="btn-primary" style={{ flex: currentQ === 0 ? 1 : 2 }}>Next →</button>
         }
       </div>
 
@@ -616,7 +631,7 @@ export default function Solve({ navigate, mode, setMode, currentQ, setCurrentQ, 
           <div className="sheet" onClick={e => e.stopPropagation()}>
             <div className="sheet-handle" />
             <div style={{ padding: '16px 20px 32px' }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: T1, marginBottom: 4 }}>Mind if we ask why you skipped this?</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: T1, marginBottom: 4 }}>Why did you leave this unattempted?</div>
               <div style={{ fontSize: 12, color: T3, lineHeight: 1.5, marginBottom: 16 }}>Helps NPrep understand your patterns — takes 5 seconds</div>
 
               {/* Reason pills — 2 column grid */}
