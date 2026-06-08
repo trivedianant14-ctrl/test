@@ -94,7 +94,7 @@ export default function Subject({ navigate, isNewUser }) {
             ? <button className="btn-sm-purple-outline">Learn</button>
             : <button className="btn-sm-outline" disabled style={{ opacity: 0.4 }}>No video</button>
           }
-          <button className="btn-sm-primary" onClick={() => navigate('pretest')}>Attempt Now</button>
+          <button className="btn-sm-primary" onClick={() => navigate('pretest')}>Attempt</button>
         </div>
       </div>
     )
