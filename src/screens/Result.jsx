@@ -334,7 +334,7 @@ export default function Result({ navigate, answers, mode, viewSolution, setShowR
 
       {/* Fixed CTAs */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'white', borderTop: `1px solid ${BD}`, padding: '12px 16px', display: 'flex', gap: 10 }}>
-        <button onClick={() => setShowReattemptConfirm(true)} className="btn-outline" style={{ flex: 1 }}>Re-Attempt</button>
+        <button onClick={() => setShowReattemptConfirm(true)} className="btn-outline" style={{ flex: 1 }}>Try Again</button>
         <button onClick={viewSolution} className="btn-primary" style={{ flex: 2 }}>View Solutions →</button>
       </div>
 
@@ -348,7 +348,7 @@ export default function Result({ navigate, answers, mode, viewSolution, setShowR
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setShowReattemptConfirm(false)} className="btn-outline" style={{ flex: 1 }}>Cancel</button>
-              <button onClick={handleReattempt} className="btn-primary" style={{ flex: 1 }}>Re-Attempt</button>
+              <button onClick={handleReattempt} className="btn-primary" style={{ flex: 1 }}>Try Again</button>
             </div>
           </div>
         </div>
