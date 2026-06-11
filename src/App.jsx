@@ -42,6 +42,8 @@ export default function App() {
   const [sessions, setSessions] = useState([])
   const [isReattempt, setIsReattempt] = useState(false)
   const [attemptCount, setAttemptCount] = useState(0)
+  const [savedVideos, setSavedVideos] = useState([])
+  const [savedResources, setSavedResources] = useState([])
   const animDirRef = useRef('forward')
 
   const goTo = (next) => {
@@ -130,6 +132,11 @@ export default function App() {
     goTo('solve')
   }
 
+  const saveVideo = (v) => setSavedVideos(prev => prev.some(x => x.id === v.id) ? prev : [...prev, v])
+  const unsaveVideo = (id) => setSavedVideos(prev => prev.filter(v => v.id !== id))
+  const saveResource = (r) => setSavedResources(prev => prev.some(x => x.id === r.id) ? prev : [...prev, r])
+  const unsaveResource = (id) => setSavedResources(prev => prev.filter(r => r.id !== id))
+
   const viewSolution = () => {
     setIsReviewMode(true)
     setCurrentQ(0)
@@ -162,6 +169,7 @@ export default function App() {
     sessions, todayQs, overallAcc, lastSession,
     isReattempt, viewAnalysis,
     attemptCount,
+    savedVideos, unsaveVideo, savedResources, unsaveResource,
   }
 
   return (
@@ -176,7 +184,7 @@ export default function App() {
         {screen === 'saved' && <Saved {...sharedProps} />}
         {screen === 'videos' && <Videos navigate={navigate} isNewUser={isNewUser} toggleUserMode={toggleUserMode} />}
         {screen === 'videosubject' && <VideoSubject navigate={navigate} setCurrentVideo={setCurrentVideo} />}
-        {screen === 'videoplayer' && <VideoPlayer navigate={navigate} currentVideo={currentVideo} />}
+        {screen === 'videoplayer' && <VideoPlayer navigate={navigate} currentVideo={currentVideo} savedVideos={savedVideos} saveVideo={saveVideo} unsaveVideo={unsaveVideo} savedResources={savedResources} saveResource={saveResource} unsaveResource={unsaveResource} />}
       </div>
     </div>
   )

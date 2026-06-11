@@ -4,7 +4,7 @@ import { QUESTIONS, SAVE_TAGS } from '../data'
 const P='#534AB7',PL='#EEEDFE',PB='#AFA9EC',PD='#3C3489'
 const T1='#1a1a2e',T2='#5a5a78',T3='#9898b0',BD='#e8e8f2',BG2='#f5f5fb'
 
-export default function Saved({ navigate, savedQs, unsaveQuestion }) {
+export default function Saved({ navigate, savedQs, unsaveQuestion, savedVideos = [], unsaveVideo, savedResources = [], unsaveResource }) {
   const [activeTab, setActiveTab] = useState('questions')
   const [filter, setFilter] = useState('all')
   const [expandedQ, setExpandedQ] = useState(null)
@@ -37,11 +37,11 @@ export default function Saved({ navigate, savedQs, unsaveQuestion }) {
         )}
       </div>
 
-      {/* Questions / Videos tab toggle */}
+      {/* Questions / Videos / Resources tab toggle */}
       <div style={{ padding: '12px 16px', borderBottom: `1px solid ${BD}`, flexShrink: 0 }}>
-        <div style={{ display: 'flex', gap: 10 }}>
-          {[{ id: 'questions', label: 'Questions' }, { id: 'videos', label: 'Videos' }].map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: 1, padding: '9px 0', borderRadius: 50, fontSize: 13, fontWeight: 600, border: `1.5px solid ${activeTab === tab.id ? P : BD}`, background: activeTab === tab.id ? P : 'white', color: activeTab === tab.id ? 'white' : T3, cursor: 'pointer', transition: 'all 0.15s' }}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {[{ id: 'questions', label: 'Questions' }, { id: 'videos', label: 'Videos' }, { id: 'resources', label: 'Resources' }].map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: 1, padding: '9px 4px', borderRadius: 50, fontSize: 12, fontWeight: 600, border: `1.5px solid ${activeTab === tab.id ? P : BD}`, background: activeTab === tab.id ? P : 'white', color: activeTab === tab.id ? 'white' : T3, cursor: 'pointer', transition: 'all 0.15s' }}>
               {tab.label}
             </button>
           ))}
@@ -130,15 +130,68 @@ export default function Saved({ navigate, savedQs, unsaveQuestion }) {
       )}
 
       {activeTab === 'videos' && (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '0 32px' }}>
-          <div style={{ width: 60, height: 60, borderRadius: '50%', background: BG2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={T3} strokeWidth="1.8" strokeLinecap="round"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        savedVideos.length === 0 ? (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '0 32px' }}>
+            <div style={{ width: 60, height: 60, borderRadius: '50%', background: BG2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={T3} strokeWidth="1.8" strokeLinecap="round"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: T2, marginBottom: 6 }}>No saved videos yet</div>
+              <div style={{ fontSize: 12, color: T3, lineHeight: 1.6 }}>Bookmark a video from the player to save it here.</div>
+            </div>
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: T2, marginBottom: 6 }}>No saved videos yet</div>
-            <div style={{ fontSize: 12, color: T3, lineHeight: 1.6 }}>Videos you bookmark from the Learn section will appear here for quick access.</div>
+        ) : (
+          <div className="scroll" style={{ flex: 1, overflowY: 'auto', padding: '8px 16px' }}>
+            {savedVideos.map(v => (
+              <div key={v.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 0', borderBottom: `1px solid ${BD}` }}>
+                <div style={{ width: 44, height: 32, background: '#1a1a2e', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: T1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.title}</div>
+                  <div style={{ fontSize: 11, color: T3, marginTop: 2 }}>{v.subject}</div>
+                </div>
+                <button onClick={() => unsaveVideo?.(v.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: P, padding: 4 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill={P} stroke={P} strokeWidth="1.8" strokeLinecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                </button>
+              </div>
+            ))}
           </div>
-        </div>
+        )
+      )}
+
+      {activeTab === 'resources' && (
+        savedResources.length === 0 ? (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '0 32px' }}>
+            <div style={{ width: 60, height: 60, borderRadius: '50%', background: BG2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={T3} strokeWidth="1.8" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: T2, marginBottom: 6 }}>No saved resources yet</div>
+              <div style={{ fontSize: 12, color: T3, lineHeight: 1.6 }}>Save slides or notes from a video to access them here.</div>
+            </div>
+          </div>
+        ) : (
+          <div className="scroll" style={{ flex: 1, overflowY: 'auto', padding: '8px 16px' }}>
+            {savedResources.map(r => (
+              <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 0', borderBottom: `1px solid ${BD}` }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: BG2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: P }}>
+                  {r.type === 'slides'
+                    ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: T1 }}>{r.type === 'slides' ? 'Slides' : 'Notes'}</div>
+                  <div style={{ fontSize: 11, color: T3, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.videoTitle} · {r.subject}</div>
+                  <div style={{ fontSize: 10, color: T3, marginTop: 1 }}>Saved on {new Date(r.savedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                </div>
+                <button onClick={() => unsaveResource?.(r.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T3, padding: 4 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )
       )}
 
       {/* Remove confirmation popup */}
