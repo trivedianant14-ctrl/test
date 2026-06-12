@@ -97,7 +97,7 @@ export default function Home({ navigate, savedQs, bannerDismissed, setBannerDism
       </div>
 
       {/* Scrollable content */}
-      <div className="scroll" style={{ flex: 1, overflowY: 'auto', paddingBottom: !isFirstTime && !continueDismissed ? 128 : 80 }}>
+      <div className="scroll" style={{ flex: 1, overflowY: 'auto' }}>
 
         {/* AIR Banner */}
         {!bannerDismissed && (
@@ -207,8 +207,8 @@ export default function Home({ navigate, savedQs, bannerDismissed, setBannerDism
         </div>
       )}
 
-      {/* Sticky continue + nav — continue hidden for first-time users */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'white' }}>
+      {/* Continue banner + nav — normal flex child so scroll area shrinks correctly */}
+      <div style={{ flexShrink: 0, background: 'white' }}>
         {!isFirstTime && !continueDismissed && (
           <div style={{ padding: '8px 16px 6px', borderTop: `1px solid ${BD}` }}>
             <div style={{ display: 'flex', alignItems: 'center', background: PL, border: `1px solid ${PB}`, borderRadius: 10, overflow: 'hidden' }}>
