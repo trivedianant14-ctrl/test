@@ -146,52 +146,57 @@ export default function LiveTestSolve({ navigate, test }) {
           </div>
         </div>
 
-        {/* Nav row: exit | Q counter | grid (timer moved to strip) */}
-        <div style={{ padding:'4px 16px 10px', display:'flex', alignItems:'center', gap:10 }}>
-          <button onClick={() => setShowExitConfirm(true)} style={{ background:'none', border:'none', cursor:'pointer', color:T1, fontSize:20, fontWeight:700, lineHeight:1 }}>✕</button>
+        {/* Nav row: exit | Q counter (timer + grid both moved out) */}
+        <div style={{ padding:'4px 16px 10px', display:'flex', alignItems:'center' }}>
+          <button onClick={() => setShowExitConfirm(true)} style={{ background:'none', border:'none', cursor:'pointer', color:T1, fontSize:20, fontWeight:700, lineHeight:1, width:28 }}>✕</button>
           <div style={{ flex:1, textAlign:'center' }}>
             <span style={{ fontSize:13, fontWeight:700, color:T1 }}>Q {currentQ + 1}</span>
             <span style={{ fontSize:13, fontWeight:400, color:T3 }}> / {QUESTIONS.length}</span>
           </div>
-          <button onClick={() => setShowGrid(true)} style={{ background:'none', border:'none', cursor:'pointer', color:T2, display:'flex' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          </button>
+          <div style={{ width:28 }} />
         </div>
 
-        {/* Question status strip — timer first, then numbered squares */}
-        <div style={{ padding:'0 16px 10px', display:'flex', gap:3, overflowX:'auto', alignItems:'center' }}>
-          <TimerInline timeLeft={timeLeft} />
-          <div style={{ width:6, flexShrink:0 }} />
-          {QUESTIONS.map((_, i) => {
-            const st = S[getStatus(i)]
-            const isCur = i === currentQ
-            return (
-              <div key={i} onClick={() => goTo(i)} style={{
-                width:22, height:22, borderRadius:5, flexShrink:0,
-                background: isCur ? P : st.bg,
-                color: isCur ? 'white' : st.c,
-                border:`1.5px solid ${isCur ? P : st.border}`,
-                fontSize:9, fontWeight:700,
-                display:'flex', alignItems:'center', justifyContent:'center',
-                cursor:'pointer',
-              }}>
-                {i + 1}
-              </div>
-            )
-          })}
+        {/* Question strip — squares scroll left, grid icon pinned right */}
+        <div style={{ padding:'0 16px 10px', display:'flex', alignItems:'center', gap:8 }}>
+          <div style={{ flex:1, display:'flex', gap:3, overflowX:'auto' }}>
+            {QUESTIONS.map((_, i) => {
+              const st = S[getStatus(i)]
+              const isCur = i === currentQ
+              return (
+                <div key={i} onClick={() => goTo(i)} style={{
+                  width:22, height:22, borderRadius:5, flexShrink:0,
+                  background: isCur ? P : st.bg,
+                  color: isCur ? 'white' : st.c,
+                  border:`1.5px solid ${isCur ? P : st.border}`,
+                  fontSize:9, fontWeight:700,
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  cursor:'pointer',
+                }}>
+                  {i + 1}
+                </div>
+              )
+            })}
+          </div>
+          <button onClick={() => setShowGrid(true)} style={{ background:'none', border:'none', cursor:'pointer', color:T2, flexShrink:0, display:'flex' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
         </div>
       </div>
 
       {/* ── Question body ── */}
       <div className="scroll" style={{ flex:1, padding:'16px 16px 100px' }}>
 
+        {/* Question label row — "Question N" [marked badge] on left, timer on right */}
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-          <span style={{ fontSize:13, fontWeight:700, color:T2 }}>Question {currentQ + 1}</span>
-          {isMarked && (
-            <span style={{ fontSize:10, fontWeight:700, background:PL, color:PD, border:`1px solid ${PB}`, padding:'2px 8px', borderRadius:20 }}>
-              Marked for Review
-            </span>
-          )}
+          <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+            <span style={{ fontSize:13, fontWeight:700, color:T2 }}>Question {currentQ + 1}</span>
+            {isMarked && (
+              <span style={{ fontSize:10, fontWeight:700, background:PL, color:PD, border:`1px solid ${PB}`, padding:'2px 7px', borderRadius:20 }}>
+                ★ Marked
+              </span>
+            )}
+          </div>
+          <TimerInline timeLeft={timeLeft} />
         </div>
 
         <div style={{ background:BG2, borderRadius:12, padding:'14px', marginBottom:16, fontSize, color:T1, lineHeight:1.6, fontWeight:500 }}>
