@@ -60,6 +60,59 @@ const PAST = [
   { id:123, name:'PYQ Revision Test – 2017 Paper',      date:'19 Apr 2025', ts: new Date('2025-04-19'), dur:'90 min',  mks:'150', cat:'PYQ Test',     f:false, m:false },
 ]
 
+// ─── Notifications data ───────────────────────────────────────────────────────
+
+const NOTIFICATIONS = [
+  {
+    id: 1,
+    type: 'live',
+    title: 'NORCET 8 Grand Test – Session 1',
+    body: 'Your registered test is live right now. Join before it closes!',
+    time: '2 min ago',
+    read: false,
+  },
+  {
+    id: 2,
+    type: 'upcoming',
+    title: 'Anatomy Subject Test – Series 4',
+    body: 'Starts in 2 days on Sat, 14 Jun. You\'re registered — stay prepared.',
+    time: '1 hr ago',
+    read: false,
+  },
+  {
+    id: 3,
+    type: 'upcoming',
+    title: 'NORCET 8 Grand Test – Session 2',
+    body: 'Registrations are open. Test scheduled for Sat, 21 Jun.',
+    time: '6 hr ago',
+    read: false,
+  },
+  {
+    id: 4,
+    type: 'result',
+    title: 'PYQ Revision Test – 2022 Paper',
+    body: 'Results are out! View your score and detailed analysis.',
+    time: '3 days ago',
+    read: true,
+  },
+  {
+    id: 5,
+    type: 'result',
+    title: 'Daily Practice Test – Biochemistry',
+    body: 'Your result for the 10 Jun test is now available.',
+    time: '4 days ago',
+    read: true,
+  },
+  {
+    id: 6,
+    type: 'result',
+    title: 'Daily Practice Test – Physiology',
+    body: 'Results declared. Check how you performed on 1 Jun test.',
+    time: '12 days ago',
+    read: true,
+  },
+]
+
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
 const ClockIcon = () => (
@@ -267,9 +320,11 @@ export default function LiveTest({ navigate }) {
   // activeModal: null | { type: 'confirm' | 'success', test }
   const [activeModal, setActiveModal]     = useState(null)
 
-  // Notification bell
-  const [showNotifs, setShowNotifs]       = useState(false)
-  const [notifsRead, setNotifsRead]       = useState(false)
+  // Notification bell — open by default, track read IDs
+  const [showNotifs, setShowNotifs]       = useState(true)
+  const [readIds, setReadIds]             = useState(
+    () => new Set(NOTIFICATIONS.filter(n => n.read).map(n => n.id))
+  )
 
   // Past tests: attempted first (desc date), then unattempted (desc date)
   const rawPast   = PAST.map(t => ({ ...t, attempted: manyAttempts ? t.m : t.f }))
@@ -288,21 +343,20 @@ export default function LiveTest({ navigate }) {
   // Register flow handlers
   const handleRegisterClick = (test) => setActiveModal({ type: 'confirm', test })
   const handleConfirm = () => {
-    setRegisteredIds(prev => new Set([...prev, activeModal.test.id]))
-    setActiveModal({ type: 'success', test: activeModal.test })
-    setNotifsRead(false) // new registration → re-badge the bell
+    const test = activeModal.test
+    setRegisteredIds(prev => new Set([...prev, test.id]))
+    setActiveModal({ type: 'success', test })
   }
   const handleCancel      = () => setActiveModal(null)
   const handleSuccessDone = () => setActiveModal(null)
 
   // Bell handlers
+  const unreadCount = NOTIFICATIONS.filter(n => !readIds.has(n.id)).length
   const handleBellClick = () => {
     setShowNotifs(true)
-    setNotifsRead(true)
+    setReadIds(new Set(NOTIFICATIONS.map(n => n.id)))
   }
-
-  // Badge: unread if the live test is now live and user has registrations
-  const hasBadge = !notifsRead
+  const hasBadge = unreadCount > 0
 
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100%', background:'white', position:'relative' }}>
@@ -341,7 +395,9 @@ export default function LiveTest({ navigate }) {
           style={{ position:'relative', background:'none', border:'none', color:T2, display:'flex', cursor:'pointer', padding:4 }}>
           <BellIcon />
           {hasBadge && (
-            <span style={{ position:'absolute', top:2, right:2, width:8, height:8, borderRadius:'50%', background:'#E53E3E', border:'1.5px solid white' }} />
+            <span style={{ position:'absolute', top:0, right:0, minWidth:16, height:16, borderRadius:8, background:'#E53E3E', border:'1.5px solid white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, fontWeight:700, color:'white', padding:'0 3px' }}>
+              {unreadCount}
+            </span>
           )}
         </button>
       </div>
@@ -466,55 +522,84 @@ export default function LiveTest({ navigate }) {
       {/* ── Notification sheet ── */}
       {showNotifs && (
         <div className="overlay" onClick={() => setShowNotifs(false)}>
-          <div className="sheet" onClick={e => e.stopPropagation()} style={{ maxHeight:'72%' }}>
+          <div className="sheet" onClick={e => e.stopPropagation()} style={{ maxHeight:'82%', display:'flex', flexDirection:'column' }}>
             <div className="sheet-handle" />
-            <div className="sheet-header">
-              <span style={{ fontSize:15, fontWeight:700, color:T1 }}>Notifications</span>
-              <button onClick={() => setShowNotifs(false)} style={{ background:'none', border:'none', color:T2, cursor:'pointer', display:'flex', padding:4 }}><CloseIcon /></button>
-            </div>
-            <div style={{ overflowY:'auto', padding:'12px 16px 24px' }}>
 
-              {/* Live test notification */}
-              <div style={{ background:`linear-gradient(135deg, ${P}14 0%, ${PD}0a 100%)`, border:`1px solid ${PB}`, borderRadius:12, padding:'14px 14px 12px', marginBottom:10 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:8 }}>
-                  <span style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'2px 8px', borderRadius:20, fontSize:10, fontWeight:700, background:RL, color:'#C53030', border:'1px solid #F09595' }}>
-                    <span style={{ width:5, height:5, borderRadius:'50%', background:'#E53E3E', display:'inline-block', animation:'livePulse 1.4s ease-in-out infinite' }} />
-                    Live Now
+            {/* Header */}
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 20px 10px', borderBottom:`1px solid ${BD}`, flexShrink:0 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <span style={{ fontSize:15, fontWeight:700, color:T1 }}>Notifications</span>
+                {unreadCount > 0 && (
+                  <span style={{ background:P, color:'white', fontSize:10, fontWeight:700, padding:'1px 7px', borderRadius:20 }}>
+                    {unreadCount} new
                   </span>
-                </div>
-                <div style={{ fontSize:13, fontWeight:600, color:T1, marginBottom:6, lineHeight:1.4 }}>{LIVE_TEST.name}</div>
-                <div style={{ fontSize:11, color:T2, marginBottom:12 }}>Your registered test is live right now!</div>
-                <button style={{ width:'100%', padding:'10px', borderRadius:8, background:P, color:'white', fontSize:13, fontWeight:700, border:'none', cursor:'pointer' }}>
-                  Join Now
-                </button>
+                )}
               </div>
+              <button onClick={() => setShowNotifs(false)} style={{ background:'none', border:'none', color:T2, cursor:'pointer', display:'flex', padding:4 }}>
+                <CloseIcon />
+              </button>
+            </div>
 
-              {/* Registered upcoming tests */}
-              {registeredUpcoming.length > 0 && (
-                <>
-                  <div style={{ fontSize:11, fontWeight:700, color:T3, letterSpacing:'0.4px', textTransform:'uppercase', marginBottom:8, marginTop:4 }}>
-                    Registered Upcoming
-                  </div>
-                  {registeredUpcoming.map(t => (
-                    <div key={t.id} style={{ background:'white', border:`1px solid ${BD}`, borderRadius:12, padding:'12px 14px', marginBottom:8, display:'flex', alignItems:'center', gap:12 }}>
-                      <div style={{ width:36, height:36, borderRadius:10, background:PL, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            {/* Notification list */}
+            <div style={{ overflowY:'auto', padding:'10px 16px 28px', flex:1 }}>
+              {NOTIFICATIONS.map((n, i) => {
+                const isUnread = !readIds.has(n.id)
+                const isLive   = n.type === 'live'
+                const isResult = n.type === 'result'
+
+                // Icon circle config
+                const iconBg     = isLive ? '#FFF0F0' : isResult ? GL : PL
+                const iconColor  = isLive ? '#E53E3E' : isResult ? G : P
+                const iconBorder = isLive ? '#FED7D7' : isResult ? GB : PB
+
+                return (
+                  <div key={n.id} style={{
+                    display:'flex', gap:12, padding:'13px 14px',
+                    borderRadius:12, marginBottom:8,
+                    background: isUnread ? 'white' : BG2,
+                    border: `1px solid ${isUnread ? (isLive ? '#FED7D7' : BD) : BD}`,
+                    borderLeft: isUnread ? `3px solid ${isLive ? '#E53E3E' : P}` : `1px solid ${BD}`,
+                    position:'relative',
+                  }}>
+                    {/* Icon */}
+                    <div style={{ width:38, height:38, borderRadius:10, background:iconBg, border:`1px solid ${iconBorder}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginTop:1 }}>
+                      {isLive ? (
+                        <span style={{ width:10, height:10, borderRadius:'50%', background:'#E53E3E', display:'inline-block', animation:'livePulse 1.4s ease-in-out infinite' }} />
+                      ) : isResult ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={G} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+                      ) : (
                         <BellIcon size={16} />
-                      </div>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontSize:12, fontWeight:600, color:T1, lineHeight:1.4, marginBottom:2 }}>{t.name}</div>
-                        <div style={{ fontSize:11, color:T3 }}>{t.date} · In {t.daysOut} {t.daysOut === 1 ? 'day' : 'days'}</div>
-                      </div>
-                      <span style={{ flexShrink:0, fontSize:10, fontWeight:700, color:G, background:GL, border:`1px solid ${GB}`, padding:'2px 8px', borderRadius:20 }}>Registered</span>
+                      )}
                     </div>
-                  ))}
-                </>
-              )}
 
-              {registeredUpcoming.length === 0 && (
-                <div style={{ textAlign:'center', padding:'24px 0', color:T3, fontSize:12 }}>
-                  Register for upcoming tests to see them here.
-                </div>
-              )}
+                    {/* Content */}
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:8, marginBottom:3 }}>
+                        <span style={{ fontSize:12, fontWeight: isUnread ? 700 : 600, color: isUnread ? T1 : T2, lineHeight:1.4, flex:1 }}>{n.title}</span>
+                        <span style={{ fontSize:10, color:T3, fontWeight:500, flexShrink:0, marginTop:1 }}>{n.time}</span>
+                      </div>
+                      <div style={{ fontSize:12, color: isUnread ? T2 : T3, lineHeight:1.5, marginBottom: isLive || isResult ? 10 : 0 }}>{n.body}</div>
+
+                      {/* Action button for live / result */}
+                      {isLive && (
+                        <button style={{ padding:'6px 14px', borderRadius:8, background:P, color:'white', fontSize:11, fontWeight:700, border:'none', cursor:'pointer' }}>
+                          Join Now
+                        </button>
+                      )}
+                      {isResult && (
+                        <button style={{ padding:'6px 14px', borderRadius:8, background:GL, color:G, fontSize:11, fontWeight:600, border:`1px solid ${GB}`, cursor:'pointer' }}>
+                          View Result
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Unread dot */}
+                    {isUnread && (
+                      <span style={{ position:'absolute', top:13, right:13, width:7, height:7, borderRadius:'50%', background: isLive ? '#E53E3E' : P }} />
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
