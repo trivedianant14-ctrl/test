@@ -204,7 +204,6 @@ function PastCard({ test }) {
             <span style={{ width:5, height:5, borderRadius:'50%', background:G, display:'inline-block' }} />
             Result Out
           </span>
-          <FormatTag format={test.format} />
         </div>
         <div style={{ fontSize:14, fontWeight:700, color:T1, lineHeight:1.4, marginBottom:3 }}>{test.fullName}</div>
         <div style={{ fontSize:11, color:T3, marginBottom:10 }}>{test.subtitle}</div>
@@ -234,7 +233,6 @@ function PastCard({ test }) {
           <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L15.5 8.5L24 9.7L18 15.5L19.5 24L12 20L4.5 24L6 15.5L0 9.7L8.5 8.5Z"/></svg>
           Gold
         </span>
-        <FormatTag format={test.format} />
       </div>
 
       {/* Test info — slightly muted */}
