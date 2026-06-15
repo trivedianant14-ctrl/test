@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
 import Home from './screens/Home'
 import Subject from './screens/Subject'
@@ -258,7 +258,8 @@ export default function App() {
     <QueryProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<NprepPrototype />} />
+          <Route path="/" element={<Navigate to="/form" replace />} />
+          <Route path="/nprep" element={<NprepPrototype />} />
           <Route path="/form" element={<RaiseAQueryLayout><FormShell /></RaiseAQueryLayout>} />
           <Route path="/dashboard" element={<RaiseAQueryLayout><Dashboard /></RaiseAQueryLayout>} />
         </Routes>
