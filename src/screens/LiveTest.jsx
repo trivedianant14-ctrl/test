@@ -569,12 +569,6 @@ export default function LiveTest({ navigate, onJoinNow, variant = 'cta' }) {
                       })}
                     </div>
                   </div>
-                  {hybridUpcomingTab === 'full_mock' ? (
-                    <div style={{ fontSize:11, color:T3, marginBottom:10, display:'flex', alignItems:'center', gap:5 }}>
-                      <span style={{ fontSize:10, fontWeight:600, background:PL, color:PD, border:`1px solid ${PB}`, padding:'2px 7px', borderRadius:20 }}>NASHTA Series</span>
-                      Full-length NORCET simulations
-                    </div>
-                  ) : null}
                   {hybridList.map(t => (
                     <UpcomingCard key={t.id} test={t} isRegistered={registeredIds.has(t.id)} onRegisterClick={handleRegisterClick} />
                   ))}
@@ -623,12 +617,6 @@ export default function LiveTest({ navigate, onJoinNow, variant = 'cta' }) {
                       })}
                     </div>
                   </div>
-                  {upcomingTab === 'full_mock' && (
-                    <div style={{ fontSize:11, color:T3, marginBottom:12, display:'flex', alignItems:'center', gap:5 }}>
-                      <span style={{ fontSize:10, fontWeight:600, background:PL, color:PD, border:`1px solid ${PB}`, padding:'2px 7px', borderRadius:20 }}>NASHTA Series</span>
-                      Full-length NORCET simulations
-                    </div>
-                  )}
                   {visibleList.map(t => (
                     <UpcomingCard key={t.id} test={t} isRegistered={registeredIds.has(t.id)} onRegisterClick={handleRegisterClick} />
                   ))}
