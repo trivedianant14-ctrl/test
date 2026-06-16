@@ -59,6 +59,10 @@ const ALL_UPCOMING = [...UPCOMING_PREBOARDS, ...UPCOMING_MOCKS]
 
 // Past — reverse-chronological, with format tag + full nursing names + score for attempted
 const PAST = [
+  { id:95,  fullName:'NORCET 9 — Stage I',           subtitle:'Full Mock · Pre-Stage Simulation',       format:'full_mock',        date:'3 Jun 2026',  ts:new Date('2026-06-03'), dur:'90 min',  mks:'100', score:'81',  f:true,  m:true  },
+  { id:96,  fullName:'Fundamentals of Nursing',       subtitle:'FON · NORCET Preboard',                  format:'subject_preboard', date:'25 May 2026', ts:new Date('2026-05-25'), dur:'60 min',  mks:'100', score:null,  f:false, m:true  },
+  { id:97,  fullName:'NASHTA 2 for NORCET',           subtitle:'Full-length NORCET simulation',           format:'full_mock',        date:'10 May 2026', ts:new Date('2026-05-10'), dur:'120 min', mks:'200', score:'158', f:true,  m:true  },
+  { id:98,  fullName:'Community Health Nursing',      subtitle:'CHN · NORCET Preboard',                  format:'subject_preboard', date:'20 Apr 2026', ts:new Date('2026-04-20'), dur:'60 min',  mks:'100', score:null,  f:false, m:false },
   { id:101, fullName:'Community Health Nursing',         subtitle:'CHN · NORCET Preboard',                          format:'subject_preboard', date:'10 Jun 2025', ts:new Date('2025-06-10'), dur:'60 min',  mks:'100', score:'74',  f:true,  m:true  },
   { id:102, fullName:'NASHTA 2 for NORCET',              subtitle:'Full-length NORCET simulation · All subjects',   format:'full_mock',        date:'7 Jun 2025',  ts:new Date('2025-06-07'), dur:'120 min', mks:'200', score:null,  f:false, m:true  },
   { id:103, fullName:'Medical Surgical Nursing',         subtitle:'MSN · NORCET Preboard',                          format:'subject_preboard', date:'3 Jun 2025',  ts:new Date('2025-06-03'), dur:'60 min',  mks:'100', score:'82',  f:true,  m:true  },
@@ -444,6 +448,7 @@ export default function LiveTest({ navigate, onJoinNow, variant = 'cta' }) {
   const [hybridUpcomingTab, setHybridUpcomingTab] = useState('full_mock')
   const [hybridPastExpanded, setHybridPastExpanded] = useState(false)
   const [hybridPastTab, setHybridPastTab]     = useState('full_mock')
+  const [fullPastOpenGroups, setFullPastOpenGroups] = useState(() => new Set())
 
   const [registeredIds, setRegisteredIds]     = useState(() => new Set(ALL_UPCOMING.filter(t => t.registered).map(t => t.id)))
   const [activeModal, setActiveModal]         = useState(null)
@@ -469,6 +474,22 @@ export default function LiveTest({ navigate, onJoinNow, variant = 'cta' }) {
   const hasMore       = activeList.length > SHOW_UPCOMING
   const hybridList         = (hybridUpcomingTab === 'subject_preboard' ? UPCOMING_PREBOARDS : UPCOMING_MOCKS).slice(0, 2)
   const hybridPastFiltered = pastTests.filter(t => t.format === hybridPastTab)
+
+  // Month/year groups for the 'full' variant past section
+  const CURRENT_YEAR = new Date().getFullYear()
+  const fullPastSorted = [...rawPast].sort((a, b) => b.ts - a.ts)
+  const fullPastGroups = (() => {
+    const groups = [], seen = {}
+    fullPastSorted.forEach(t => {
+      const parts = t.date.split(' ')
+      const year  = parseInt(parts[2])
+      const month = MONTH_MAP[parts[1]] || parts[1]
+      const key   = year === CURRENT_YEAR ? `${month} ${year}` : `${year}`
+      if (!seen[key]) { seen[key] = { key, label: key, isCurrentYear: year === CURRENT_YEAR, tests: [] }; groups.push(seen[key]) }
+      seen[key].tests.push(t)
+    })
+    return groups
+  })()
 
   const CATEGORIES = ['PYQ Test', 'Subject Test', 'Daily Test', 'Mini Test', 'Live Test']
 
@@ -498,11 +519,11 @@ export default function LiveTest({ navigate, onJoinNow, variant = 'cta' }) {
       {/* Prototype toggle */}
       <div style={{ flexShrink:0, display:'flex', justifyContent:'center', padding:'6px 16px', background:BG2, borderBottom:`1px solid ${BD}` }}>
         <div style={{ display:'inline-flex', background:'white', border:`1px solid ${BD}`, borderRadius:20, padding:3, gap:2 }}>
-          <button onClick={() => { setManyAttempts(false); setPastExpanded(false); setHybridPastExpanded(false) }}
+          <button onClick={() => { setManyAttempts(false); setPastExpanded(false); setHybridPastExpanded(false); setFullPastOpenGroups(new Set()) }}
             style={{ padding:'4px 14px', borderRadius:16, fontSize:11, fontWeight:600, background:!manyAttempts?P:'transparent', color:!manyAttempts?'white':T3, border:'none', cursor:'pointer' }}>
             Few Attempts
           </button>
-          <button onClick={() => { setManyAttempts(true); setPastExpanded(false); setHybridPastExpanded(false) }}
+          <button onClick={() => { setManyAttempts(true); setPastExpanded(false); setHybridPastExpanded(false); setFullPastOpenGroups(new Set()) }}
             style={{ padding:'4px 14px', borderRadius:16, fontSize:11, fontWeight:600, background:manyAttempts?P:'transparent', color:manyAttempts?'white':T3, border:'none', cursor:'pointer' }}>
             Many Attempts
           </button>
@@ -753,46 +774,68 @@ export default function LiveTest({ navigate, onJoinNow, variant = 'cta' }) {
                   )}
                 </>
               ) : (
-                // ── V2: Collapsed summary → expand to full list ──
+                // ── V2: Full list grouped by month (current year) or year (prior years), each collapsible ──
                 <>
-                  <div style={{ fontSize:13, fontWeight:700, color:T1, marginBottom:12 }}>Past Tests</div>
-                  {!pastExpanded ? (
-                    <button onClick={() => setPastExpanded(true)}
-                      style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', borderRadius:12, background:BG2, border:`1px solid ${BD}`, cursor:'pointer', marginBottom:8 }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                        <div style={{ width:36, height:36, borderRadius:10, background:PL, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><polyline points="9,12 11,14 15,10"/></svg>
-                        </div>
-                        <div>
-                          <div style={{ fontSize:13, fontWeight:600, color:T1, textAlign:'left' }}>
-                            {totalPast} past tests
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+                    <span style={{ fontSize:13, fontWeight:700, color:T1 }}>Past Tests</span>
+                    <span style={{ fontSize:11, color:T3 }}>
+                      <span style={{ color:G, fontWeight:700 }}>{attemptedPast}</span>/{totalPast} attempted
+                    </span>
+                  </div>
+                  {fullPastGroups.map(group => {
+                    const isOpen = fullPastOpenGroups.has(group.key)
+                    const groupAttempted = group.tests.filter(t => t.attempted).length
+                    const toggleGroup = () => setFullPastOpenGroups(prev => {
+                      const next = new Set(prev)
+                      if (next.has(group.key)) next.delete(group.key); else next.add(group.key)
+                      return next
+                    })
+                    return (
+                      <div key={group.key} style={{ marginBottom:8 }}>
+                        <button onClick={toggleGroup} style={{
+                          width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between',
+                          padding:'12px 14px',
+                          borderRadius: isOpen ? '10px 10px 0 0' : 10,
+                          background: isOpen ? PL : BG2,
+                          border: `1px solid ${isOpen ? PB : BD}`,
+                          cursor:'pointer',
+                        }}>
+                          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                            <div style={{ width:32, height:32, borderRadius:8, background: isOpen ? P : 'white', border:`1px solid ${isOpen ? P : BD}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                              {group.isCurrentYear ? (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={isOpen ? 'white' : P} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                              ) : (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={isOpen ? 'white' : P} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                                </svg>
+                              )}
+                            </div>
+                            <div style={{ textAlign:'left' }}>
+                              <div style={{ fontSize:13, fontWeight:700, color: isOpen ? PD : T1 }}>{group.label}</div>
+                              <div style={{ fontSize:11, color: isOpen ? PB : T3, marginTop:1 }}>
+                                <span style={{ color: groupAttempted > 0 ? G : (isOpen ? PB : T3), fontWeight: groupAttempted > 0 ? 700 : 400 }}>{groupAttempted}</span>/{group.tests.length} attempted
+                              </div>
+                            </div>
                           </div>
-                          <div style={{ fontSize:11, color:T3, marginTop:3, display:'flex', alignItems:'center', gap:6 }}>
-                            <span>Subject <span style={{ color:G, fontWeight:700 }}>{subjectAttempted}</span>/{subjectPast.length}</span>
-                            <span style={{ color:BD }}>·</span>
-                            <span>Full-length <span style={{ color:G, fontWeight:700 }}>{fullAttempted}</span>/{fullPast.length}</span>
+                          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                            <span style={{ fontSize:11, fontWeight:600, color: isOpen ? PD : T3, background: isOpen ? 'rgba(255,255,255,0.6)' : 'white', border:`1px solid ${isOpen ? PB : BD}`, padding:'2px 9px', borderRadius:20 }}>
+                              {group.tests.length} {group.tests.length === 1 ? 'test' : 'tests'}
+                            </span>
+                            <div style={{ color: isOpen ? P : T3 }}>
+                              {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </div>
                           </div>
-                        </div>
+                        </button>
+                        {isOpen && (
+                          <div style={{ border:`1px solid ${PB}`, borderTop:'none', borderRadius:'0 0 10px 10px', padding:'10px 10px 4px', background:BG2 }}>
+                            {group.tests.map(t => <PastCard key={t.id} test={t} />)}
+                          </div>
+                        )}
                       </div>
-                      <div style={{ color:T3 }}><ChevronDown size={18} /></div>
-                    </button>
-                  ) : (
-                    <>
-                      <button onClick={() => setPastExpanded(false)}
-                        style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 16px', borderRadius:12, background:PL, border:`1px solid ${PB}`, cursor:'pointer', marginBottom:12 }}>
-                        <span style={{ fontSize:13, fontWeight:600, color:PD }}>
-                          {totalPast} past tests
-                          <span style={{ color:PB, fontWeight:500 }}> · </span>
-                          <span style={{ color:G, fontWeight:700 }}>{attemptedPast} attempted</span>
-                        </span>
-                        <div style={{ display:'flex', alignItems:'center', gap:4, color:P }}>
-                          <span style={{ fontSize:11, fontWeight:600 }}>Hide</span>
-                          <ChevronUp size={14} />
-                        </div>
-                      </button>
-                      {pastTests.map(t => <PastCard key={t.id} test={t} />)}
-                    </>
-                  )}
+                    )
+                  })}
                 </>
               )}
             </div>
