@@ -105,8 +105,8 @@ export default function FormShell({ embedded = false, onClose, onDone }) {
           const FULL_EVIDENCE = ['answer-wrong', 'book-different', 'multi-correct']
           const isWrongAnswer = selectedOption?.id === 'wrong-answer'
           const needsFullEvidence = isWrongAnswer && FULL_EVIDENCE.includes(selectedSubOption?.id)
-          // Remaining wrong-answer subs get textbox only — no voice, no evidence
-          const isTextOnly = isWrongAnswer && !needsFullEvidence
+          // Remaining wrong-answer subs + cant-see: no voice
+          const isTextOnly = (isWrongAnswer && !needsFullEvidence) || selectedOption?.id === 'cant-see'
 
           if (needsFullEvidence) return (
             <WrongAnswerEvidenceScreen
