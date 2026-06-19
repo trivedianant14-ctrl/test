@@ -328,25 +328,50 @@ function QueryCard({ query, onClick }) {
   )
 }
 
-// ── Profile Header ───────────────────────────────────────────────────────────
-function ProfileHeader({ queries, filter, setFilter }) {
+// ── Profile Home (landing page) ──────────────────────────────────────────────
+function ProfileHome({ queries, onOpenQueries, onClose }) {
   const activeCount = queries.filter(q => q.status !== 'resolved').length
   const resolvedCount = queries.filter(q => q.status === 'resolved').length
 
-  const STAT_ITEMS = [
-    { label: 'Raised',    value: queries.length, key: 'all',      color: P,       bg: PL,       border: PB },
-    { label: 'In Review', value: activeCount,     key: 'active',   color: ORANGE,  bg: ORANGE_BG, border: '#FED7AA' },
-    { label: 'Resolved',  value: resolvedCount,   key: 'resolved', color: GREEN,   bg: GREEN_BG,  border: GREEN_BORDER },
-  ]
+  const MenuRow = ({ icon, title, subtitle, badge, onClick, disabled }) => (
+    <button
+      onClick={disabled ? undefined : onClick}
+      style={{ width: '100%', textAlign: 'left', background: 'white', border: `1px solid ${BD}`, borderRadius: 14, padding: '14px 16px', cursor: disabled ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 14, transition: 'box-shadow 0.15s, border-color 0.15s', opacity: disabled ? 0.5 : 1 }}
+      onMouseEnter={e => { if (!disabled) { e.currentTarget.style.borderColor = PB; e.currentTarget.style.boxShadow = `0 2px 12px rgba(83,74,183,0.1)` } }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = BD; e.currentTarget.style.boxShadow = 'none' }}
+    >
+      <div style={{ width: 40, height: 40, borderRadius: 11, background: PL, border: `1px solid ${PB}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        {icon}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: T1 }}>{title}</div>
+        <div style={{ fontSize: 11, color: T2, marginTop: 2 }}>{subtitle}</div>
+      </div>
+      {badge && (
+        <div style={{ padding: '3px 9px', borderRadius: 20, background: PL, border: `1px solid ${PB}`, fontSize: 11, fontWeight: 700, color: P, flexShrink: 0 }}>{badge}</div>
+      )}
+      {!disabled && (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T3} strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
+          <polyline points="9,18 15,12 9,6"/>
+        </svg>
+      )}
+    </button>
+  )
 
   return (
-    <div style={{ flexShrink: 0 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'white', borderBottom: `1px solid ${BD}`, flexShrink: 0 }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: T1 }}>My Profile</div>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: T2, padding: 4, lineHeight: 1, display: 'flex', alignItems: 'center' }}>✕</button>
+      </div>
+
       {/* Avatar + name */}
-      <div style={{ padding: '18px 18px 14px', display: 'flex', alignItems: 'center', gap: 14, background: 'white', borderBottom: `1px solid ${BD}` }}>
-        <div style={{ width: 60, height: 60, borderRadius: '50%', background: `linear-gradient(135deg, ${P} 0%, ${PD} 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 4px 16px rgba(83,74,183,0.32)` }}>
-          <span style={{ fontSize: 24, fontWeight: 900, color: 'white', letterSpacing: '-1px' }}>A</span>
+      <div style={{ padding: '20px 18px 18px', display: 'flex', alignItems: 'center', gap: 14, background: 'white', borderBottom: `1px solid ${BD}`, flexShrink: 0 }}>
+        <div style={{ width: 60, height: 60, borderRadius: '50%', background: `linear-gradient(135deg, ${P} 0%, ${PD} 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 4px 16px rgba(83,74,183,0.3)` }}>
+          <span style={{ fontSize: 24, fontWeight: 900, color: 'white' }}>A</span>
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div>
           <div style={{ fontSize: 18, fontWeight: 800, color: T1, letterSpacing: '-0.3px' }}>Anant Trivedi</div>
           <div style={{ fontSize: 12, color: T2, marginTop: 2 }}>NORCET Gold 2024</div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 5, padding: '2px 8px', background: PL, borderRadius: 20, border: `1px solid ${PB}` }}>
@@ -356,67 +381,82 @@ function ProfileHeader({ queries, filter, setFilter }) {
         </div>
       </div>
 
-      {/* Stats card */}
-      <div style={{ margin: '12px 16px', borderRadius: 14, border: `1px solid ${BD}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-        <div style={{ padding: '10px 14px 8px', background: BG2, borderBottom: `1px solid ${BD}` }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: T2, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Your Queries</div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', background: 'white' }}>
-          {STAT_ITEMS.map((stat, i) => (
-            <button key={stat.key} onClick={() => setFilter(stat.key)}
-              style={{ padding: '12px 6px', textAlign: 'center', cursor: 'pointer', border: 'none', background: filter === stat.key ? stat.bg : 'white', borderRight: i < 2 ? `1px solid ${BD}` : 'none', borderBottom: `3px solid ${filter === stat.key ? stat.color : 'transparent'}`, transition: 'all 0.15s' }}
-            >
-              <div style={{ fontSize: 24, fontWeight: 900, color: stat.color, letterSpacing: '-1px' }}>{stat.value}</div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: T3, marginTop: 2 }}>{stat.label}</div>
-            </button>
-          ))}
-        </div>
+      {/* Menu cards */}
+      <div className="scroll" style={{ flex: 1, overflowY: 'auto', padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 10, background: BG2 }}>
+        <MenuRow
+          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="2" strokeLinecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/></svg>}
+          title="Your Queries"
+          subtitle={`${queries.length} total · ${activeCount} in review · ${resolvedCount} resolved`}
+          badge={activeCount > 0 ? `${activeCount} active` : undefined}
+          onClick={onOpenQueries}
+        />
+        <MenuRow
+          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="2" strokeLinecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>}
+          title="Your Collection"
+          subtitle="Bookmarks, saved questions and notes"
+          disabled
+        />
       </div>
     </div>
   )
 }
 
-// ── Main Overlay ─────────────────────────────────────────────────────────────
-export default function QueryTracker({ onClose }) {
-  const { queries } = useQueries()
-  const [selected, setSelected] = useState(null)
+// ── Queries Sub-view ──────────────────────────────────────────────────────────
+function QueriesView({ queries, onBack, onClose, onSelect }) {
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
+
+  const activeCount = queries.filter(q => q.status !== 'resolved').length
+  const resolvedCount = queries.filter(q => q.status === 'resolved').length
 
   const byFilter = filter === 'all' ? queries
     : filter === 'active' ? queries.filter(q => q.status !== 'resolved')
     : queries.filter(q => q.status === 'resolved')
 
-  const q = search.trim().toLowerCase()
-  const filtered = q
+  const sq = search.trim().toLowerCase()
+  const filtered = sq
     ? byFilter.filter(x =>
-        x.category?.toLowerCase().includes(q) ||
-        x.sub_option?.toLowerCase().includes(q) ||
-        x.query_text?.toLowerCase().includes(q) ||
-        ticketId(x.id).toLowerCase().includes(q)
+        x.category?.toLowerCase().includes(sq) ||
+        x.sub_option?.toLowerCase().includes(sq) ||
+        x.query_text?.toLowerCase().includes(sq) ||
+        ticketId(x.id).toLowerCase().includes(sq)
       )
     : byFilter
 
-  if (selected) return (
-    <div style={{ position: 'absolute', inset: 0, background: 'white', zIndex: 100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <QueryDetailView query={selected} onBack={() => setSelected(null)} onClose={onClose} />
-    </div>
-  )
+  const STAT_ITEMS = [
+    { label: 'Raised',    value: queries.length, key: 'all',      color: P,      bg: PL,        border: PB },
+    { label: 'In Review', value: activeCount,     key: 'active',  color: ORANGE, bg: ORANGE_BG, border: '#FED7AA' },
+    { label: 'Resolved',  value: resolvedCount,   key: 'resolved', color: GREEN,  bg: GREEN_BG,  border: GREEN_BORDER },
+  ]
 
   return (
-    <div style={{ position: 'absolute', inset: 0, background: '#F7F7FB', zIndex: 100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Header bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'white', borderBottom: `1px solid ${BD}`, flexShrink: 0 }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: T1 }}>My Profile</div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: 'white', borderBottom: `1px solid ${BD}`, flexShrink: 0 }}>
+        <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T1, display: 'flex', padding: 2 }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15,18 9,12 15,6"/></svg>
+        </button>
+        <div style={{ flex: 1, fontSize: 16, fontWeight: 700, color: T1 }}>Your Queries</div>
         <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: T2, padding: 4, lineHeight: 1, display: 'flex', alignItems: 'center' }}>✕</button>
       </div>
 
-      {/* Profile header + stats */}
-      <ProfileHeader queries={queries} filter={filter} setFilter={setFilter} />
+      {/* Stats — clickable filters */}
+      <div style={{ flexShrink: 0, borderBottom: `1px solid ${BD}`, background: 'white' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
+          {STAT_ITEMS.map((stat, i) => (
+            <button key={stat.key} onClick={() => setFilter(stat.key)}
+              style={{ padding: '14px 6px', textAlign: 'center', cursor: 'pointer', border: 'none', background: filter === stat.key ? stat.bg : 'white', borderRight: i < 2 ? `1px solid ${BD}` : 'none', borderBottom: `3px solid ${filter === stat.key ? stat.color : 'transparent'}`, transition: 'all 0.15s' }}
+            >
+              <div style={{ fontSize: 26, fontWeight: 900, color: stat.color, letterSpacing: '-1px' }}>{stat.value}</div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: T3, marginTop: 3 }}>{stat.label}</div>
+            </button>
+          ))}
+        </div>
+      </div>
 
-      {/* My Queries section label + search */}
-      <div style={{ padding: '10px 16px 8px', background: 'white', borderBottom: `1px solid ${BD}`, flexShrink: 0, marginTop: 0 }}>
+      {/* Section label + search toggle */}
+      <div style={{ padding: '10px 16px 8px', background: 'white', borderBottom: `1px solid ${BD}`, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: searchOpen ? 8 : 0 }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: T1 }}>Query History</div>
@@ -448,13 +488,40 @@ export default function QueryTracker({ onClose }) {
       </div>
 
       {/* Query list */}
-      <div className="scroll" style={{ flex: 1, overflowY: 'auto', padding: '10px 14px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="scroll" style={{ flex: 1, overflowY: 'auto', padding: '10px 14px 24px', display: 'flex', flexDirection: 'column', gap: 8, background: BG2 }}>
         {filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 0', color: T3, fontSize: 13 }}>No queries found</div>
         ) : (
-          filtered.map(q => <QueryCard key={q.id} query={q} onClick={() => setSelected(q)} />)
+          filtered.map(q => <QueryCard key={q.id} query={q} onClick={() => onSelect(q)} />)
         )}
       </div>
+    </div>
+  )
+}
+
+// ── Main Overlay ─────────────────────────────────────────────────────────────
+export default function QueryTracker({ onClose }) {
+  const { queries } = useQueries()
+  const [view, setView] = useState('profile') // 'profile' | 'queries' | 'detail'
+  const [selected, setSelected] = useState(null)
+
+  const openQuery = (q) => { setSelected(q); setView('detail') }
+
+  if (view === 'detail' && selected) return (
+    <div style={{ position: 'absolute', inset: 0, background: 'white', zIndex: 100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <QueryDetailView query={selected} onBack={() => setView('queries')} onClose={onClose} />
+    </div>
+  )
+
+  if (view === 'queries') return (
+    <div style={{ position: 'absolute', inset: 0, background: BG2, zIndex: 100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <QueriesView queries={queries} onBack={() => setView('profile')} onClose={onClose} onSelect={openQuery} />
+    </div>
+  )
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: BG2, zIndex: 100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <ProfileHome queries={queries} onOpenQueries={() => setView('queries')} onClose={onClose} />
     </div>
   )
 }
