@@ -4,8 +4,8 @@ export const MAIN_OPTIONS = [
     icon: 'x',
     iconBg: 'rgba(220,38,38,0.1)',
     iconColor: '#DC2626',
-    title: 'Wrong answer',
-    subtitle: "The marked answer doesn't seem right",
+    title: 'Problem with the answer',
+    subtitle: 'The answer key looks wrong to me',
     screenKey: '2A'
   },
   {
@@ -13,8 +13,8 @@ export const MAIN_OPTIONS = [
     icon: 'eye',
     iconBg: 'rgba(37,99,235,0.1)',
     iconColor: '#2563EB',
-    title: "Can't see something",
-    subtitle: 'Image, text, or explanation is missing or broken',
+    title: "Can't See Something",
+    subtitle: "I can't see the image, options, or explanation",
     screenKey: '2B'
   },
   {
@@ -22,7 +22,7 @@ export const MAIN_OPTIONS = [
     icon: '!',
     iconBg: 'rgba(22,163,74,0.1)',
     iconColor: '#16A34A',
-    title: 'Explanation gap',
+    title: 'I have a doubt',
     subtitle: 'I want this question or answer explained',
     screenKey: '2C'
   },
@@ -31,8 +31,8 @@ export const MAIN_OPTIONS = [
     icon: '!',
     iconBg: 'rgba(234,88,12,0.1)',
     iconColor: '#EA580C',
-    title: 'Not the right question',
-    subtitle: 'Repeated, wrong subject, wrong language, or wrong content',
+    title: 'Problem with this question',
+    subtitle: "This question doesn't match my syllabus or exam",
     screenKey: '2D'
   }
 ]
@@ -40,43 +40,44 @@ export const MAIN_OPTIONS = [
 export const SUB_OPTIONS = {
   '2A': {
     header: 'What exactly feels wrong?',
-    category: 'Wrong Answer',
+    category: 'Problem with the Answer',
     options: [
-      { id: 'marked-wrong', label: 'The marked answer is wrong', prompt: 'The answer should be option B because...' },
-      { id: 'exp-mismatch', label: "The explanation doesn't match the answer", prompt: 'The explanation says ___ but the answer is ___...' },
-      { id: 'multi-correct', label: 'More than one option seems correct', prompt: 'Which options seem correct to you?' },
-      { id: 'incomplete', label: 'The question is incomplete or unclear', prompt: "What's missing or confusing?" },
-      { id: 'book-different', label: 'My book or class says something different', prompt: 'Which book or source are you referring to?' }
+      { id: 'answer-wrong',    label: 'The answer shown is wrong',                         prompt: 'What do you think the correct answer is, and why?' },
+      { id: 'exp-mismatch',    label: "Explanation / rationale doesn't match the answer",   prompt: 'How does the explanation contradict the answer?' },
+      { id: 'book-different',  label: 'My book / teacher says something different',         prompt: 'Which book or source are you referring to?' },
+      { id: 'shows-unattempt', label: 'I answered this but it shows unattempted',           prompt: 'Can you describe what happened when you selected your answer?' },
+      { id: 'multi-correct',   label: 'More than 1 option looks correct',                   prompt: 'Which options seem correct to you, and why?' },
+      { id: 'marked-wrong',    label: "I selected the right answer but it's marked wrong",  prompt: 'Which option did you select?' }
     ]
   },
   '2B': {
-    header: "What's missing or broken?",
+    header: "What can't you see?",
     category: "Can't See Something",
     options: [
-      { id: 'image-missing', label: 'Question image is not showing', prompt: 'Which image - question, options, or explanation?' },
-      { id: 'text-garbled', label: 'Option text is missing or garbled', prompt: 'Which option number is affected?' },
-      { id: 'formula-broken', label: 'Explanation, table, or formula is broken', prompt: "What's broken - table, formula, or diagram?" },
-      { id: 'image-wrong', label: "Image is showing but it's wrong or unclear", prompt: 'What seems wrong or unclear about the image?' }
+      { id: 'image-loading',   label: 'Image in the question is not loading',               prompt: 'Which image — question, options, or explanation?' },
+      { id: 'text-garbled',    label: 'Option text is missing or has symbols',              prompt: 'Which option number is affected?' },
+      { id: 'formula-missing', label: 'Explanation / table / formula is not showing',       prompt: "What's missing — table, formula, or diagram?" },
+      { id: 'cut-off',         label: 'Question is cut off or incomplete',                  prompt: 'What part of the question seems cut off?' }
     ]
   },
   '2C': {
-    header: 'What kind of help do you need?',
-    category: 'Explanation Gap',
+    header: 'What are you unsure about?',
+    category: 'I Have a Doubt',
     options: [
-      { id: 'explain-why', label: 'Explain why this answer is correct', prompt: 'What part of the explanation is confusing?' },
-      { id: 'simpler', label: 'Explain in simpler language', prompt: 'Which part do you want explained more simply?' },
-      { id: 'why-wrong', label: 'Why is an option wrong?', prompt: 'Which option are you wondering about?' },
-      { id: 'teacher-diff', label: 'My teacher or book explains this differently', prompt: 'What does your teacher or book say?' }
+      { id: 'why-correct',   label: 'Why is this the correct answer?',     prompt: 'What part of the explanation is confusing?' },
+      { id: 'didnt-get-exp', label: "I didn't understand the explanation", prompt: 'Which part do you want explained more simply?' },
+      { id: 'why-wrong',     label: 'Why is this option wrong?',           prompt: 'Which option are you wondering about?' }
     ]
   },
   '2D': {
-    header: "What's wrong with this question?",
-    category: 'Not the Right Question',
+    header: "What's the problem with this question?",
+    category: 'Problem with this Question',
     options: [
-      { id: 'wrong-content', label: 'The question itself has wrong or incorrect content', prompt: "What's wrong with the question?" },
-      { id: 'already-seen', label: "I've already seen this question before", prompt: 'Same test or a different one?' },
-      { id: 'wrong-subject', label: 'This is under the wrong subject or chapter', prompt: 'What subject should this be under?' },
-      { id: 'wrong-language', label: 'This is in the wrong language or out of syllabus', prompt: 'What language were you expecting?' }
+      { id: 'q-wrong',        label: 'The question itself is wrong',                    prompt: "What's wrong with the question?" },
+      { id: 'already-seen',   label: "I've already seen this question",                 prompt: 'Same test or a different one?' },
+      { id: 'wrong-language', label: 'Question is in the wrong language',               prompt: 'What language were you expecting?' },
+      { id: 'not-syllabus',   label: 'This is not in my syllabus',                     prompt: 'What exam or syllabus are you preparing for?' },
+      { id: 'wrong-topic',    label: 'This belongs to a different topic or chapter',   prompt: 'What topic or chapter should this be under?' }
     ]
   }
 }
