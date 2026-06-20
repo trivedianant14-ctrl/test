@@ -641,8 +641,6 @@ function QueryDetailView({ query, onBack, onClose }) {
           </div>
         )}
 
-        {/* Call / write / voice section — for resolved tickets */}
-        {stage === 3 && <CallRequestSection agent={agent} />}
       </div>
     </div>
   )
